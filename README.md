@@ -31,6 +31,14 @@ npm run dev
 npm run build
 ```
 
+## Publishing
+
+See [docs/PUBLISHING.md](docs/PUBLISHING.md) for detailed instructions on:
+- Building distributable DMG files
+- Code signing and notarization
+- Publishing to GitHub Releases
+- Setting up CI/CD for automated releases
+
 ## Usage
 
 1. Launch the application

@@ -33,8 +33,8 @@ export function NamespaceConfig() {
         >
           <option value="">-- Add namespace --</option>
           {namespaces
-            .filter((ns) => !configured.includes(ns))
-            .map((ns) => (
+            .filter((ns: string) => !configured.includes(ns))
+            .map((ns: string) => (
               <option key={ns} value={ns}>
                 {ns}
               </option>
@@ -42,7 +42,7 @@ export function NamespaceConfig() {
         </select>
       </div>
       <div className="flex flex-wrap gap-2">
-        {configured.map((ns) => (
+        {configured.map((ns: string) => (
           <span
             key={ns}
             className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"

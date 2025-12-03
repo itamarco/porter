@@ -1,5 +1,6 @@
 import { usePortForwardStore } from '../stores/portforwards';
 import { useK8s } from '../hooks/useK8s';
+import { ClusterInfo } from '../types/electron';
 
 export function ClusterSelector() {
   const { clusters, selectedCluster } = usePortForwardStore();
@@ -16,7 +17,7 @@ export function ClusterSelector() {
         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="">-- Select a cluster --</option>
-        {clusters.map((cluster) => (
+        {clusters.map((cluster: ClusterInfo) => (
           <option key={cluster.context} value={cluster.context}>
             {cluster.name}
           </option>

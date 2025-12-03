@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { usePortForwardStore } from '../stores/portforwards';
 import { useK8s } from '../hooks/useK8s';
-import { PortForwardState } from '../types/electron';
+import { PortForwardState, PortForwardStatus } from '../types/electron';
 
 const stateColors: Record<PortForwardState, string> = {
   [PortForwardState.CONNECTING]: 'bg-yellow-100 text-yellow-800',
@@ -42,7 +42,7 @@ export function ActiveForwards() {
     <div className="mt-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-4">Active Port Forwards</h2>
       <div className="space-y-3">
-        {activeForwards.map((forward) => (
+        {activeForwards.map((forward: PortForwardStatus) => (
           <ForwardCard key={forward.id} forward={forward} />
         ))}
       </div>
@@ -50,7 +50,7 @@ export function ActiveForwards() {
   );
 }
 
-function ForwardCard({ forward }: { forward: any }) {
+function ForwardCard({ forward }: { forward: PortForwardStatus }) {
   const handleStop = async () => {
     if (!window.electronAPI) return;
     try {

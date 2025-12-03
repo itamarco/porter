@@ -7,8 +7,14 @@
   "files": [
     "dist/**/*",
     "dist-electron/**/*",
-    "package.json"
+    "package.json",
+    "!dist-electron/**/__tests__/**",
+    "!dist-electron/**/*.test.js",
+    "!dist-electron/__tests__/**"
   ],
+  "extraMetadata": {
+    "main": "dist-electron/main.js"
+  },
   "mac": {
     "category": "public.app-category.developer-tools",
     "target": [
@@ -16,12 +22,10 @@
         "target": "dmg",
         "arch": ["x64", "arm64"]
       }
-    ],
-    "icon": "assets/icon.icns"
+    ]
   },
   "dmg": {
-    "title": "${productName}-${version}",
-    "icon": "assets/icon.icns"
+    "title": "${productName}-${version}"
   }
 }
 

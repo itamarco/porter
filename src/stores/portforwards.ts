@@ -28,7 +28,7 @@ interface PortForwardStore {
   saveConfig: () => Promise<void>;
 }
 
-export const usePortForwardStore = create<PortForwardStore>((set) => ({
+export const usePortForwardStore = create<PortForwardStore>()((set, get) => ({
   clusters: [],
   selectedCluster: null,
   namespaces: [],
@@ -83,8 +83,8 @@ export const usePortForwardStore = create<PortForwardStore>((set) => ({
       }, 100);
       return updated;
     }),
-  getPortOverride: (key) => {
-    return usePortForwardStore.getState().portOverrides[key];
+  getPortOverride: (key: string): number | undefined => {
+    return get().portOverrides[key];
   },
   setServices: (cluster, namespace, services) =>
     set((state) => ({

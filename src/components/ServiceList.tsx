@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePortForwardStore } from '../stores/portforwards';
 import { useK8s } from '../hooks/useK8s';
-import { ServiceInfo, ServicePortInfo, PortForwardState } from '../types/electron';
+import { ServiceInfo, ServicePortInfo, PortForwardState, PortForwardStatus, ClusterInfo } from '../types/electron';
 
 export function ServiceList() {
   const { clusters, configuredNamespaces, services } = usePortForwardStore();
@@ -18,7 +18,7 @@ export function ServiceList() {
   };
 
   const clustersWithNamespaces = clusters.filter(
-    (cluster) => (configuredNamespaces[cluster.context] || []).length > 0
+    (cluster: ClusterInfo) => (configuredNamespaces[cluster.context] || []).length > 0
   );
 
   if (clustersWithNamespaces.length === 0) {
@@ -34,13 +34,13 @@ export function ServiceList() {
     <div className="mb-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-4">Services</h2>
       <div className="space-y-6">
-        {clustersWithNamespaces.map((cluster) => {
+        {clustersWithNamespaces.map((cluster: ClusterInfo) => {
           const namespaces = configuredNamespaces[cluster.context] || [];
           return (
             <div key={cluster.context} className="border border-gray-200 rounded-lg p-4">
               <h3 className="text-lg font-medium text-gray-800 mb-4">{cluster.name}</h3>
               <div className="space-y-4">
-                {namespaces.map((namespace) => {
+                {namespaces.map((namespace: string) => {
                   const serviceKey = `${cluster.context}:${namespace}`;
                   const serviceList = services[serviceKey] || [];
 
@@ -59,7 +59,7 @@ export function ServiceList() {
                         <p className="text-gray-500 text-sm">No services found</p>
                       ) : (
                         <div className="space-y-2">
-                          {serviceList.map((service) => (
+                          {serviceList.map((service: ServiceInfo) => (
                             <ServiceCard
                               key={service.name}
                               service={service}
@@ -136,7 +136,7 @@ function PortForwardCard({
   const [starting, setStarting] = useState(false);
 
   const forwardId = `${cluster}-${namespace}-${service}-${port.port}-${parseInt(localPort, 10)}`;
-  const activeForward = activeForwards.find((f) => f.id === forwardId);
+  const activeForward = activeForwards.find((f: PortForwardStatus) => f.id === forwardId);
   const isActive = activeForward && activeForward.state === PortForwardState.ACTIVE;
 
   const handleStart = async () => {

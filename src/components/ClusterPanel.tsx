@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePortForwardStore } from '../stores/portforwards';
 import { useK8s } from '../hooks/useK8s';
-import { ServiceInfo, ServicePortInfo, PortForwardState } from '../types/electron';
+import { ServiceInfo, ServicePortInfo, PortForwardState, PortForwardStatus, ClusterInfo } from '../types/electron';
 
 export function ClusterPanel() {
   const { clusters, configuredNamespaces, services } = usePortForwardStore();
@@ -46,7 +46,7 @@ export function ClusterPanel() {
         <p className="text-gray-500 text-sm">No clusters found</p>
       ) : (
         <div className="space-y-2">
-          {clusters.map((cluster) => (
+          {clusters.map((cluster: ClusterInfo) => (
             <ClusterPane
               key={cluster.context}
               cluster={cluster}
@@ -271,7 +271,7 @@ function PortForwardCard({
   cluster: string;
   namespace: string;
 }) {
-  const { activeForwards, portOverrides, setPortOverride, getPortOverride } = usePortForwardStore();
+  const { activeForwards, setPortOverride, getPortOverride } = usePortForwardStore();
   const portOverrideKey = `${cluster}:${namespace}:${service}:${port.port}`;
   const savedPort = getPortOverride(portOverrideKey);
   const [localPort, setLocalPort] = useState(
@@ -288,7 +288,7 @@ function PortForwardCard({
   };
 
   const forwardId = `${cluster}-${namespace}-${service}-${port.port}-${parseInt(localPort, 10)}`;
-  const activeForward = activeForwards.find((f) => f.id === forwardId);
+  const activeForward = activeForwards.find((f: PortForwardStatus) => f.id === forwardId);
   const isActive = activeForward && activeForward.state === PortForwardState.ACTIVE;
 
   const handleStart = async () => {
