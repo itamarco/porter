@@ -1,4 +1,4 @@
-import { IpcMain } from 'electron';
+import { IpcMain, shell } from 'electron';
 import { K8sClient } from './client';
 import { getClusters } from './clusters';
 import { getNamespaces, getServices } from './services';
@@ -93,6 +93,16 @@ export function setupK8sHandlers(ipcMain: IpcMain, portForwardManager: PortForwa
       return true;
     } catch (error) {
       console.error('Error saving config:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('open-in-browser', async (_event, url: string) => {
+    try {
+      await shell.openExternal(url);
+      return true;
+    } catch (error) {
+      console.error('Error opening browser:', error);
       throw error;
     }
   });

@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getActiveForwards: () => ipcRenderer.invoke('get-active-forwards'),
   loadConfig: () => ipcRenderer.invoke('load-config'),
   saveConfig: (config: any) => ipcRenderer.invoke('save-config', config),
+  openInBrowser: (url: string) => ipcRenderer.invoke('open-in-browser', url),
   onPortForwardUpdate: (callback: (data: any) => void) => {
     ipcRenderer.on('port-forward-update', (_event, data) => callback(data));
   },

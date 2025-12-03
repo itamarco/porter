@@ -1,65 +1,82 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePortForwardStore } from '../stores/portforwards';
 import { useK8s } from '../hooks/useK8s';
-import { ServiceInfo, ServicePortInfo } from '../types/electron';
+import { ServiceInfo, ServicePortInfo, PortForwardState } from '../types/electron';
 
 export function ServiceList() {
-  const { selectedCluster, configuredNamespaces, services } = usePortForwardStore();
-  const { loadServices } = useK8s();
+  const { clusters, configuredNamespaces, services } = usePortForwardStore();
+  const { loadServices, refreshActiveForwards } = useK8s();
 
-  if (!selectedCluster) {
-    return null;
-  }
+  useEffect(() => {
+    refreshActiveForwards();
+    const interval = setInterval(refreshActiveForwards, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const configured = configuredNamespaces[selectedCluster] || [];
-
-  const handleLoadServices = async (namespace: string) => {
-    if (selectedCluster) {
-      await loadServices(selectedCluster, namespace);
-    }
+  const handleLoadServices = async (cluster: string, namespace: string) => {
+    await loadServices(cluster, namespace);
   };
+
+  const clustersWithNamespaces = clusters.filter(
+    (cluster) => (configuredNamespaces[cluster.context] || []).length > 0
+  );
+
+  if (clustersWithNamespaces.length === 0) {
+    return (
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Services</h2>
+        <p className="text-gray-500 text-sm">Add namespaces to clusters above to see services</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-4">Services</h2>
-      {configured.length === 0 ? (
-        <p className="text-gray-500 text-sm">Add namespaces above to see services</p>
-      ) : (
-        <div className="space-y-4">
-          {configured.map((namespace) => {
-            const serviceKey = `${selectedCluster}:${namespace}`;
-            const serviceList = services[serviceKey] || [];
+      <div className="space-y-6">
+        {clustersWithNamespaces.map((cluster) => {
+          const namespaces = configuredNamespaces[cluster.context] || [];
+          return (
+            <div key={cluster.context} className="border border-gray-200 rounded-lg p-4">
+              <h3 className="text-lg font-medium text-gray-800 mb-4">{cluster.name}</h3>
+              <div className="space-y-4">
+                {namespaces.map((namespace) => {
+                  const serviceKey = `${cluster.context}:${namespace}`;
+                  const serviceList = services[serviceKey] || [];
 
-            return (
-              <div key={namespace} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-medium text-gray-800">{namespace}</h3>
-                  <button
-                    onClick={() => handleLoadServices(namespace)}
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                  >
-                    Refresh
-                  </button>
-                </div>
-                {serviceList.length === 0 ? (
-                  <p className="text-gray-500 text-sm">No services found</p>
-                ) : (
-                  <div className="space-y-2">
-                    {serviceList.map((service) => (
-                      <ServiceCard
-                        key={service.name}
-                        service={service}
-                        cluster={selectedCluster}
-                        namespace={namespace}
-                      />
-                    ))}
-                  </div>
-                )}
+                  return (
+                    <div key={namespace}>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-md font-medium text-gray-700">{namespace}</h4>
+                        <button
+                          onClick={() => handleLoadServices(cluster.context, namespace)}
+                          className="text-sm text-blue-600 hover:text-blue-800"
+                        >
+                          Refresh
+                        </button>
+                      </div>
+                      {serviceList.length === 0 ? (
+                        <p className="text-gray-500 text-sm">No services found</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {serviceList.map((service) => (
+                            <ServiceCard
+                              key={service.name}
+                              service={service}
+                              cluster={cluster.context}
+                              namespace={namespace}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
-      )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -114,8 +131,13 @@ function PortForwardCard({
   cluster: string;
   namespace: string;
 }) {
+  const { activeForwards } = usePortForwardStore();
   const [localPort, setLocalPort] = useState(port.port.toString());
   const [starting, setStarting] = useState(false);
+
+  const forwardId = `${cluster}-${namespace}-${service}-${port.port}-${parseInt(localPort, 10)}`;
+  const activeForward = activeForwards.find((f) => f.id === forwardId);
+  const isActive = activeForward && activeForward.state === PortForwardState.ACTIVE;
 
   const handleStart = async () => {
     if (!window.electronAPI) {
@@ -138,32 +160,70 @@ function PortForwardCard({
     }
   };
 
+  const handleStop = async () => {
+    if (!window.electronAPI || !activeForward) return;
+    try {
+      await window.electronAPI.stopPortForward(activeForward.id);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Failed to stop port forward');
+    }
+  };
+
+  const handleOpenBrowser = () => {
+    if (window.electronAPI && activeForward) {
+      window.electronAPI.openInBrowser(`http://localhost:${activeForward.localPort}`);
+    }
+  };
+
   return (
-    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded">
+    <div className={`flex items-center gap-3 p-2 rounded ${isActive ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
       <div className="flex-1">
         <div className="text-sm font-medium text-gray-700">
           {port.name} ({port.protocol})
         </div>
         <div className="text-xs text-gray-500">
           Service: {port.port} → Local: {localPort}
+          {isActive && (
+            <span className="ml-2 text-green-600 font-medium">● Active</span>
+          )}
         </div>
       </div>
-      <input
-        type="number"
-        value={localPort}
-        onChange={(e) => setLocalPort(e.target.value)}
-        className="w-20 px-2 py-1 text-sm border border-gray-300 rounded"
-        placeholder="Local port"
-        min="1"
-        max="65535"
-      />
-      <button
-        onClick={handleStart}
-        disabled={starting || !localPort}
-        className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-      >
-        {starting ? 'Starting...' : 'Start'}
-      </button>
+      {isActive ? (
+        <div className="flex gap-2">
+          <button
+            onClick={handleOpenBrowser}
+            className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            Open
+          </button>
+          <button
+            onClick={handleStop}
+            className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Stop
+          </button>
+        </div>
+      ) : (
+        <>
+          <input
+            type="number"
+            value={localPort}
+            onChange={(e) => setLocalPort(e.target.value)}
+            className="w-20 px-2 py-1 text-sm border border-gray-300 rounded"
+            placeholder="Local port"
+            min="1"
+            max="65535"
+            disabled={starting}
+          />
+          <button
+            onClick={handleStart}
+            disabled={starting || !localPort}
+            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {starting ? 'Starting...' : 'Start'}
+          </button>
+        </>
+      )}
     </div>
   );
 }

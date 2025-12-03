@@ -44,6 +44,7 @@ export interface PortForwardStatus extends PortForwardConfig {
 
 export interface AppConfig {
   configuredNamespaces: Record<string, string[]>;
+  portOverrides: Record<string, number>;
 }
 
 export interface ElectronAPI {
@@ -55,6 +56,7 @@ export interface ElectronAPI {
   getActiveForwards: () => Promise<PortForwardStatus[]>;
   loadConfig: () => Promise<AppConfig>;
   saveConfig: (config: AppConfig) => Promise<boolean>;
+  openInBrowser: (url: string) => Promise<boolean>;
   onPortForwardUpdate: (callback: (data: PortForwardStatus) => void) => void;
   removePortForwardListener: () => void;
 }

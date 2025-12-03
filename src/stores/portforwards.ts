@@ -6,6 +6,7 @@ interface PortForwardStore {
   selectedCluster: string | null;
   namespaces: string[];
   configuredNamespaces: Record<string, string[]>;
+  portOverrides: Record<string, number>;
   services: Record<string, ServiceInfo[]>;
   activeForwards: PortForwardStatus[];
   loading: boolean;
@@ -16,6 +17,8 @@ interface PortForwardStore {
   setNamespaces: (namespaces: string[]) => void;
   addNamespace: (cluster: string, namespace: string) => void;
   removeNamespace: (cluster: string, namespace: string) => void;
+  setPortOverride: (key: string, localPort: number) => void;
+  getPortOverride: (key: string) => number | undefined;
   setServices: (cluster: string, namespace: string, services: ServiceInfo[]) => void;
   setActiveForwards: (forwards: PortForwardStatus[]) => void;
   updateForward: (forward: PortForwardStatus) => void;
@@ -30,6 +33,7 @@ export const usePortForwardStore = create<PortForwardStore>((set) => ({
   selectedCluster: null,
   namespaces: [],
   configuredNamespaces: {},
+  portOverrides: {},
   services: {},
   activeForwards: [],
   loading: false,
@@ -66,6 +70,22 @@ export const usePortForwardStore = create<PortForwardStore>((set) => ({
       }, 100);
       return updated;
     }),
+  setPortOverride: (key, localPort) =>
+    set((state) => {
+      const updated = {
+        portOverrides: {
+          ...state.portOverrides,
+          [key]: localPort,
+        },
+      };
+      setTimeout(() => {
+        usePortForwardStore.getState().saveConfig();
+      }, 100);
+      return updated;
+    }),
+  getPortOverride: (key) => {
+    return usePortForwardStore.getState().portOverrides[key];
+  },
   setServices: (cluster, namespace, services) =>
     set((state) => ({
       services: {
@@ -90,7 +110,10 @@ export const usePortForwardStore = create<PortForwardStore>((set) => ({
     if (!window.electronAPI) return;
     try {
       const config = await window.electronAPI.loadConfig();
-      set({ configuredNamespaces: config.configuredNamespaces });
+      set({
+        configuredNamespaces: config.configuredNamespaces || {},
+        portOverrides: config.portOverrides || {},
+      });
     } catch (error) {
       console.error('Failed to load config:', error);
     }
@@ -101,6 +124,7 @@ export const usePortForwardStore = create<PortForwardStore>((set) => ({
       const state = usePortForwardStore.getState();
       const config: AppConfig = {
         configuredNamespaces: state.configuredNamespaces,
+        portOverrides: state.portOverrides,
       };
       await window.electronAPI.saveConfig(config);
     } catch (error) {

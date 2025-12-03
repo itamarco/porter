@@ -21,9 +21,23 @@ export function useK8s() {
   } = usePortForwardStore();
 
   useEffect(() => {
-    loadClusters();
-    loadConfig();
-    setupPortForwardListener();
+    const initialize = async () => {
+      setupPortForwardListener();
+      await loadConfig();
+      await loadClusters();
+      
+      const state = usePortForwardStore.getState();
+      const { configuredNamespaces, clusters } = state;
+      
+      for (const cluster of clusters) {
+        const namespaces = configuredNamespaces[cluster.context] || [];
+        for (const namespace of namespaces) {
+          await loadServices(cluster.context, namespace);
+        }
+      }
+    };
+    
+    initialize();
     
     return () => {
       if (window.electronAPI) {
@@ -64,14 +78,16 @@ export function useK8s() {
     }
   };
 
-  const loadNamespaces = async (cluster: string) => {
-    if (!window.electronAPI) return;
+  const loadNamespaces = async (cluster: string): Promise<string[]> => {
+    if (!window.electronAPI) return [];
     try {
       setLoading(true);
       const namespaceList = await window.electronAPI.getNamespaces(cluster);
       setNamespaces(namespaceList);
+      return namespaceList;
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to load namespaces');
+      return [];
     } finally {
       setLoading(false);
     }
@@ -114,6 +130,7 @@ export function useK8s() {
     services,
     activeForwards,
     setSelectedCluster,
+    loadNamespaces,
     loadServices,
     refreshActiveForwards,
   };

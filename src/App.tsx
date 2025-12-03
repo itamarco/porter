@@ -1,7 +1,4 @@
-import { ClusterSelector } from './components/ClusterSelector';
-import { NamespaceConfig } from './components/NamespaceConfig';
-import { ServiceList } from './components/ServiceList';
-import { ActiveForwards } from './components/ActiveForwards';
+import { ClusterPanel } from './components/ClusterPanel';
 import { useK8s } from './hooks/useK8s';
 import { usePortForwardStore } from './stores/portforwards';
 
@@ -23,10 +20,7 @@ function App() {
           </div>
         )}
 
-        <ClusterSelector />
-        <NamespaceConfig />
-        <ServiceList />
-        <ActiveForwards />
+        <ClusterPanel />
       </div>
     </div>
   );
