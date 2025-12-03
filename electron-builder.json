@@ -1,0 +1,27 @@
+{
+  "appId": "com.porter.app",
+  "productName": "Porter",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist/**/*",
+    "dist-electron/**/*",
+    "package.json"
+  ],
+  "mac": {
+    "category": "public.app-category.developer-tools",
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "icon": "assets/icon.icns"
+  },
+  "dmg": {
+    "title": "${productName}-${version}",
+    "icon": "assets/icon.icns"
+  }
+}
+
