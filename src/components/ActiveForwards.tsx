@@ -24,15 +24,15 @@ export function ActiveForwards() {
   if (activeForwards.length === 0) {
     return (
       <div className="mt-8">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Active Port Forwards</h2>
-        <p className="text-gray-700 text-base">No active port forwards</p>
+        <h2 className="text-2xl font-semibold text-gray-100 mb-4">Active Port Forwards</h2>
+        <p className="text-gray-300 text-base">No active port forwards</p>
       </div>
     );
   }
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Active Port Forwards</h2>
+      <h2 className="text-2xl font-semibold text-gray-100 mb-4">Active Port Forwards</h2>
       <div className="space-y-4">
         {activeForwards.map((forward: PortForwardStatus) => (
           <ForwardCard key={forward.id} forward={forward} />
@@ -91,11 +91,11 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
     }}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <span className="font-semibold text-gray-800">
+          <span className="font-semibold text-gray-100">
             {forward.service} ({forward.namespace})
           </span>
           <span
-            className="px-3 py-1 text-xs font-semibold rounded-lg glass-badge text-gray-800"
+            className="px-3 py-1 text-xs font-semibold rounded-lg glass-badge text-gray-100"
             style={{
               background: stateBgColors[forward.state],
               borderColor: stateBorderColors[forward.state]
@@ -108,7 +108,7 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
           {forward.state === PortForwardState.FAILED && (
             <button
               onClick={handleRetry}
-              className="px-4 py-2 text-sm font-semibold glass-button rounded-lg text-gray-800"
+              className="px-4 py-2 text-sm font-semibold glass-button rounded-lg text-gray-100"
               style={{
                 background: 'rgba(59, 130, 246, 0.25)',
                 borderColor: 'rgba(59, 130, 246, 0.4)'
@@ -120,7 +120,7 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
           {forward.state !== PortForwardState.STOPPED && (
             <button
               onClick={handleStop}
-              className="px-4 py-2 text-sm font-semibold glass-button rounded-lg text-gray-800"
+              className="px-4 py-2 text-sm font-semibold glass-button rounded-lg text-gray-100"
               style={{
                 background: 'rgba(220, 38, 38, 0.25)',
                 borderColor: 'rgba(220, 38, 38, 0.4)'
@@ -131,20 +131,20 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
           )}
         </div>
       </div>
-      <div className="text-sm text-gray-700">
+      <div className="text-sm text-gray-300">
         <div>
           {forward.cluster} → localhost:{forward.localPort} (service port: {forward.servicePort})
         </div>
         {forward.error && (
-          <div className="mt-2 text-red-800 text-xs font-medium">{forward.error}</div>
+          <div className="mt-2 text-red-200 text-xs font-medium">{forward.error}</div>
         )}
         {forward.retryCount > 0 && (
-          <div className="mt-2 text-yellow-800 text-xs">
+          <div className="mt-2 text-yellow-200 text-xs">
             Retry attempt: {forward.retryCount}/{5}
           </div>
         )}
         {forward.nextRetryAt && (
-          <div className="mt-2 text-yellow-800 text-xs">
+          <div className="mt-2 text-yellow-200 text-xs">
             Next retry: {new Date(forward.nextRetryAt).toLocaleTimeString()}
           </div>
         )}

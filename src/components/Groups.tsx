@@ -143,10 +143,10 @@ export function Groups() {
     return (
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold text-gray-800">Groups</h2>
+          <h2 className="text-2xl font-semibold text-gray-100">Groups</h2>
           <button
             onClick={handleCreateGroup}
-            className="px-4 py-2 text-sm font-semibold glass-button rounded-lg text-gray-800"
+            className="px-4 py-2 text-sm font-semibold glass-button rounded-lg text-gray-100"
             style={{
               background: 'rgba(59, 130, 246, 0.25)',
               borderColor: 'rgba(59, 130, 246, 0.4)'
@@ -155,7 +155,7 @@ export function Groups() {
             Create Group
           </button>
         </div>
-        <p className="text-gray-700 text-base">No groups created yet. Create a group to manage multiple services together.</p>
+        <p className="text-gray-300 text-base">No groups created yet. Create a group to manage multiple services together.</p>
         {showForm && (
           <GroupForm
             group={editingGroup}
@@ -169,10 +169,10 @@ export function Groups() {
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-semibold text-gray-800">Groups</h2>
+        <h2 className="text-2xl font-semibold text-gray-100">Groups</h2>
         <button
           onClick={handleCreateGroup}
-          className="px-4 py-2 text-sm font-semibold glass-button rounded-lg text-gray-800"
+          className="px-4 py-2 text-sm font-semibold glass-button rounded-lg text-gray-100"
           style={{
             background: 'rgba(59, 130, 246, 0.25)',
             borderColor: 'rgba(59, 130, 246, 0.4)'
@@ -208,16 +208,16 @@ export function Groups() {
                   className="flex-1 flex items-center justify-between glass-button rounded-lg px-3 py-2"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="font-semibold text-gray-800">{group.name}</span>
-                    <span className="text-xs text-gray-600">
+                    <span className="font-semibold text-gray-100">{group.name}</span>
+                    <span className="text-xs text-gray-400">
                       {groupServicePorts.length} service{groupServicePorts.length !== 1 ? 's' : ''}
                     </span>
                     {allActive && (
-                      <span className="text-xs text-green-700 font-semibold">● All Active</span>
+                      <span className="text-xs text-green-400 font-semibold">● All Active</span>
                     )}
                   </div>
                   <svg
-                    className={`w-5 h-5 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    className={`w-5 h-5 text-gray-300 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -229,7 +229,7 @@ export function Groups() {
                   <button
                     onClick={() => handleStartAll(group)}
                     disabled={isStarting || isStopping || allActive}
-                    className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-gray-800"
+                    className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-gray-100"
                     style={{
                       background: isStarting || allActive ? 'rgba(156, 163, 175, 0.25)' : 'rgba(34, 197, 94, 0.25)',
                       borderColor: isStarting || allActive ? 'rgba(156, 163, 175, 0.4)' : 'rgba(34, 197, 94, 0.4)'
@@ -240,7 +240,7 @@ export function Groups() {
                   <button
                     onClick={() => handleStopAll(group)}
                     disabled={isStopping || activeForwardsForGroup.length === 0}
-                    className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-gray-800"
+                    className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-gray-100"
                     style={{
                       background: isStopping || activeForwardsForGroup.length === 0 ? 'rgba(156, 163, 175, 0.25)' : 'rgba(220, 38, 38, 0.25)',
                       borderColor: isStopping || activeForwardsForGroup.length === 0 ? 'rgba(156, 163, 175, 0.4)' : 'rgba(220, 38, 38, 0.4)'
@@ -250,7 +250,7 @@ export function Groups() {
                   </button>
                   <button
                     onClick={() => handleEditGroup(group)}
-                    className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg whitespace-nowrap text-gray-800"
+                    className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg whitespace-nowrap text-gray-100"
                   >
                     Edit
                   </button>
@@ -260,7 +260,7 @@ export function Groups() {
                         deleteGroup(group.id);
                       }
                     }}
-                    className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg whitespace-nowrap text-gray-800"
+                    className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg whitespace-nowrap text-gray-100"
                     style={{
                       background: 'rgba(220, 38, 38, 0.25)',
                       borderColor: 'rgba(220, 38, 38, 0.4)'
@@ -271,10 +271,10 @@ export function Groups() {
                 </div>
               </div>
               {isExpanded && (
-                <div className="px-5 py-4 border-t border-gray-200/50 bg-white/20">
+                <div className="px-5 py-4 border-t border-white/10 bg-black/20">
                   <div className="space-y-2">
                     {groupServicePorts.length === 0 ? (
-                      <p className="text-sm text-gray-700">No services in this group</p>
+                      <p className="text-sm text-gray-300">No services in this group</p>
                     ) : (
                       groupServicePorts.map((gsp, index) => {
                         if (!gsp) return null;
@@ -290,7 +290,7 @@ export function Groups() {
                         return (
                           <div
                             key={`${gsp.cluster}-${gsp.namespace}-${gsp.service}-${gsp.port}-${index}`}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg glass ${isActive ? 'border-green-300/40' : 'border-gray-200/50'}`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg glass ${isActive ? 'border-green-300/40' : 'border-white/10'}`}
                             style={isActive ? {
                               background: 'rgba(34, 197, 94, 0.2)',
                               backdropFilter: 'blur(12px)',
@@ -298,16 +298,16 @@ export function Groups() {
                             } : {}}
                           >
                             <div className="flex-1 flex items-center gap-3 min-w-0">
-                              <span className="text-xs text-gray-600">{cluster?.name || gsp.cluster}</span>
-                              <span className="text-xs text-gray-600">/</span>
-                              <span className="text-xs text-gray-600">{gsp.namespace}</span>
-                              <span className="text-xs text-gray-600">/</span>
-                              <span className="text-sm font-semibold text-gray-800 truncate">{gsp.service}</span>
-                              <span className="text-xs text-gray-700 whitespace-nowrap">
+                              <span className="text-xs text-gray-400">{cluster?.name || gsp.cluster}</span>
+                              <span className="text-xs text-gray-400">/</span>
+                              <span className="text-xs text-gray-400">{gsp.namespace}</span>
+                              <span className="text-xs text-gray-400">/</span>
+                              <span className="text-sm font-semibold text-gray-100 truncate">{gsp.service}</span>
+                              <span className="text-xs text-gray-300 whitespace-nowrap">
                                 {gsp.portInfo.name} ({gsp.port}/{gsp.portInfo.protocol})
                               </span>
                               {isActive && (
-                                <span className="text-xs text-green-700 font-semibold whitespace-nowrap">● Active</span>
+                                <span className="text-xs text-green-400 font-semibold whitespace-nowrap">● Active</span>
                               )}
                             </div>
                           </div>

@@ -51,15 +51,15 @@ export function ServiceList() {
   if (clustersWithSelectedServices.length === 0) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Services</h2>
-        <p className="text-gray-700 text-base">Select services from namespace chips below to see them here</p>
+        <h2 className="text-2xl font-semibold text-gray-100 mb-4">Services</h2>
+        <p className="text-gray-300 text-base">Select services from namespace chips below to see them here</p>
       </div>
     );
   }
 
   return (
     <div className="mb-8">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Services</h2>
+      <h2 className="text-2xl font-semibold text-gray-100 mb-4">Services</h2>
       <div className="space-y-3">
         {clustersWithSelectedServices.map((cluster: ClusterInfo) => {
           const selectedServicePorts = getSelectedServicePorts(cluster);
@@ -71,9 +71,9 @@ export function ServiceList() {
                 onClick={() => toggleCluster(cluster.context)}
                 className="w-full px-5 py-4 flex items-center justify-between glass-button rounded-t-xl"
               >
-                <span className="font-semibold text-gray-800">{cluster.name}</span>
+                <span className="font-semibold text-gray-100">{cluster.name}</span>
                 <svg
-                  className={`w-5 h-5 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                  className={`w-5 h-5 text-gray-300 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -82,7 +82,7 @@ export function ServiceList() {
                 </svg>
               </button>
               {isExpanded && (
-                <div className="px-5 py-4 border-t border-gray-200/50 bg-white/20">
+                <div className="px-5 py-4 border-t border-white/10 bg-black/20">
                   <div className="space-y-2">
                     {selectedServicePorts.map((item, index) => (
                       <ServicePortRow
@@ -172,29 +172,29 @@ function ServicePortRow({
   };
 
   return (
-    <div className={`flex items-center gap-3 px-4 py-3 rounded-lg glass ${isActive ? 'border-green-300/40' : 'border-gray-200/50'}`} style={isActive ? {
+    <div className={`flex items-center gap-3 px-4 py-3 rounded-lg glass ${isActive ? 'border-green-300/40' : 'border-white/10'}`} style={isActive ? {
       background: 'rgba(34, 197, 94, 0.2)',
       backdropFilter: 'blur(12px)',
       borderColor: 'rgba(34, 197, 94, 0.35)'
     } : {}}>
       <div className="flex-1 flex items-center gap-3 min-w-0">
-        <span className="text-sm font-semibold text-gray-800 truncate">{service}</span>
-        <span className="text-xs text-gray-700 whitespace-nowrap">
+        <span className="text-sm font-semibold text-gray-100 truncate">{service}</span>
+        <span className="text-xs text-gray-300 whitespace-nowrap">
           {port.name} ({port.port}/{port.protocol})
         </span>
-        <span className="text-xs text-gray-600">→</span>
+        <span className="text-xs text-gray-400">→</span>
         <input
           type="number"
           value={localPort}
           onChange={(e) => handlePortChange(e.target.value)}
-          className="w-20 px-2 py-1 text-xs glass-input rounded text-gray-800 placeholder-gray-500"
+          className="w-20 px-2 py-1 text-xs glass-input rounded text-gray-100 placeholder-gray-400"
           placeholder="Local"
           min="1"
           max="65535"
           disabled={starting || isActive}
         />
         {isActive && (
-          <span className="text-xs text-green-700 font-semibold whitespace-nowrap">● Active</span>
+          <span className="text-xs text-green-400 font-semibold whitespace-nowrap">● Active</span>
         )}
       </div>
       <div className="flex gap-2 flex-shrink-0">
@@ -202,7 +202,7 @@ function ServicePortRow({
           <>
             <button
               onClick={handleOpenBrowser}
-              className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg whitespace-nowrap text-gray-800"
+              className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg whitespace-nowrap text-gray-100"
               style={{
                 background: 'rgba(34, 197, 94, 0.25)',
                 borderColor: 'rgba(34, 197, 94, 0.4)'
@@ -212,7 +212,7 @@ function ServicePortRow({
             </button>
             <button
               onClick={handleStop}
-              className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg whitespace-nowrap text-gray-800"
+              className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg whitespace-nowrap text-gray-100"
               style={{
                 background: 'rgba(220, 38, 38, 0.25)',
                 borderColor: 'rgba(220, 38, 38, 0.4)'
@@ -225,7 +225,7 @@ function ServicePortRow({
           <button
             onClick={handleStart}
             disabled={starting || !localPort}
-            className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-gray-800"
+            className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-gray-100"
             style={{
               background: starting || !localPort ? 'rgba(156, 163, 175, 0.25)' : 'rgba(59, 130, 246, 0.25)',
               borderColor: starting || !localPort ? 'rgba(156, 163, 175, 0.4)' : 'rgba(59, 130, 246, 0.4)'

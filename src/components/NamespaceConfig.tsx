@@ -18,7 +18,7 @@ export function NamespaceConfig() {
 
   return (
     <div className="mb-8">
-      <label className="block text-base font-semibold text-gray-800 mb-3">
+      <label className="block text-base font-semibold text-gray-100 mb-3">
         Configured Namespaces
       </label>
       <div className="flex gap-3 mb-3">
@@ -29,7 +29,7 @@ export function NamespaceConfig() {
               e.target.value = '';
             }
           }}
-          className="flex-1 px-4 py-3 glass-select rounded-xl text-gray-800 font-medium"
+          className="flex-1 px-4 py-3 glass-select rounded-xl text-gray-100 font-medium"
         >
           <option value="">-- Add namespace --</option>
           {namespaces
@@ -45,7 +45,7 @@ export function NamespaceConfig() {
         {configured.map((ns: string) => (
           <span
             key={ns}
-            className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold glass-chip text-gray-800"
+            className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold glass-chip text-gray-100"
             style={{
               background: 'rgba(59, 130, 246, 0.2)',
               borderColor: 'rgba(59, 130, 246, 0.35)'
@@ -54,7 +54,7 @@ export function NamespaceConfig() {
             {ns}
             <button
               onClick={() => removeNamespace(selectedCluster, ns)}
-              className="ml-3 text-gray-600 hover:text-gray-800 transition-colors font-bold text-lg"
+              className="ml-3 text-gray-400 hover:text-gray-100 transition-colors font-bold text-lg"
             >
               ×
             </button>

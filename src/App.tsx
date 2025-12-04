@@ -12,8 +12,8 @@ function App() {
     <div className="h-screen w-screen overflow-y-auto">
       <div className="p-8 max-w-6xl mx-auto">
         <div className="mb-8 glass-card rounded-2xl p-6">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Porter</h1>
-          <p className="text-gray-700 text-lg">K8s Port Forward Manager</p>
+          <h1 className="text-4xl font-bold text-white mb-2">Porter</h1>
+          <p className="text-gray-300 text-lg">K8s Port Forward Manager</p>
         </div>
 
         {error && (
@@ -22,7 +22,7 @@ function App() {
             backdropFilter: 'blur(12px)',
             borderColor: 'rgba(220, 38, 38, 0.3)'
           }}>
-            <p className="font-semibold text-red-900">{error}</p>
+            <p className="font-semibold text-red-200">{error}</p>
           </div>
         )}
 
