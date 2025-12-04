@@ -82,11 +82,14 @@ export function ConfigMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 glass-button rounded-lg text-gray-100 hover:bg-white/20 transition-colors"
+        className={`
+          p-3 rounded-xl text-gray-300 transition-all duration-200
+          ${isOpen ? 'shadow-skeuo-active text-skeuo-accent' : 'skeuo-btn hover:text-white'}
+        `}
         aria-label="Config menu"
       >
         <svg
-          className="w-5 h-5"
+          className="w-6 h-6"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -101,33 +104,39 @@ export function ConfigMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 glass-card rounded-lg shadow-lg z-50 overflow-hidden">
-          <div className="py-1">
+        <div className="absolute right-0 mt-4 w-56 skeuo-card p-2 z-50 overflow-hidden animate-fade-in">
+          <div className="flex flex-col gap-2">
             <button
               onClick={handleReset}
-              className="w-full text-left px-4 py-2.5 text-sm text-gray-100 hover:bg-white/10 transition-colors flex items-center gap-2"
+              className="w-full text-left px-4 py-3 text-sm font-medium text-gray-300 hover:text-red-400 hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-3 group"
             >
+              <div className="p-1.5 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
+              </div>
               Reset State
             </button>
             <button
               onClick={handleExport}
-              className="w-full text-left px-4 py-2.5 text-sm text-gray-100 hover:bg-white/10 transition-colors flex items-center gap-2"
+              className="w-full text-left px-4 py-3 text-sm font-medium text-gray-300 hover:text-white hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-3 group"
             >
+              <div className="p-1.5 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
+              </div>
               Export State
             </button>
             <button
               onClick={handleImport}
-              className="w-full text-left px-4 py-2.5 text-sm text-gray-100 hover:bg-white/10 transition-colors flex items-center gap-2"
+              className="w-full text-left px-4 py-3 text-sm font-medium text-gray-300 hover:text-white hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-3 group"
             >
+              <div className="p-1.5 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
+              </div>
               Import State
             </button>
           </div>
@@ -136,4 +145,3 @@ export function ConfigMenu() {
     </div>
   );
 }
-

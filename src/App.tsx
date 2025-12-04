@@ -10,25 +10,24 @@ function App() {
   const { error } = usePortForwardStore();
 
   return (
-    <div className="h-screen w-screen overflow-y-auto">
+    <div className="h-screen w-screen overflow-y-auto bg-skeuo-bg text-gray-200 font-sans">
       <div className="p-8 max-w-6xl mx-auto">
-        <div className="mb-8 glass-card rounded-2xl p-6">
-          <div className="flex items-start justify-between">
+        <div className="mb-8 skeuo-card p-8 flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">Porter</h1>
-              <p className="text-gray-300 text-lg">K8s Port Forward Manager</p>
-            </div>
-            <ConfigMenu />
+            <h1 className="text-4xl font-bold text-gray-100 mb-2 tracking-tight">Porter</h1>
+            <p className="text-gray-400 text-lg font-medium">K8s Port Forward Manager</p>
           </div>
+          <ConfigMenu />
         </div>
 
         {error && (
-          <div className="mb-6 p-4 glass rounded-xl" style={{
-            background: 'rgba(220, 38, 38, 0.15)',
-            backdropFilter: 'blur(12px)',
-            borderColor: 'rgba(220, 38, 38, 0.3)'
-          }}>
-            <p className="font-semibold text-red-200">{error}</p>
+          <div className="mb-6 p-4 rounded-2xl shadow-skeuo-inset-sm bg-red-500/10 border border-red-500/20 flex items-start gap-3">
+            <div className="mt-0.5 text-red-400">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p className="font-medium text-red-300">{error}</p>
           </div>
         )}
 
@@ -41,4 +40,3 @@ function App() {
 }
 
 export default App;
-

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { usePortForwardStore } from '../stores/portforwards';
 import { useK8s } from '../hooks/useK8s';
-import { ServicePortInfo, PortForwardState, PortForwardStatus, ClusterInfo } from '../types/electron';
+import { ServicePortInfo, PortForwardState, ClusterInfo } from '../types/electron';
 
 export function ServiceList() {
   const { clusters, services, selectedServices } = usePortForwardStore();
@@ -51,39 +51,54 @@ export function ServiceList() {
   if (clustersWithSelectedServices.length === 0) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-gray-100 mb-4">Services</h2>
-        <p className="text-gray-300 text-base">Select services from namespace chips below to see them here</p>
+        <h2 className="text-2xl font-bold text-gray-200 mb-6 tracking-wide">Services</h2>
+        <div className="skeuo-card p-8 text-center shadow-skeuo-inset">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-skeuo-bg shadow-skeuo flex items-center justify-center text-gray-500">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+            </svg>
+          </div>
+          <p className="text-gray-300 font-medium">No services selected</p>
+          <p className="text-sm text-gray-500 mt-2">Select services from namespaces below to see them here</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="mb-8">
-      <h2 className="text-2xl font-semibold text-gray-100 mb-4">Services</h2>
-      <div className="space-y-3">
+      <h2 className="text-2xl font-bold text-gray-200 mb-6 tracking-wide">Services</h2>
+      <div className="space-y-6">
         {clustersWithSelectedServices.map((cluster: ClusterInfo) => {
           const selectedServicePorts = getSelectedServicePorts(cluster);
           const isExpanded = expandedClusters[cluster.context] || false;
 
           return (
-            <div key={cluster.context} className="glass-card rounded-xl overflow-hidden">
+            <div key={cluster.context} className="skeuo-card overflow-hidden">
               <button
                 onClick={() => toggleCluster(cluster.context)}
-                className="w-full px-5 py-4 flex items-center justify-between glass-button rounded-t-xl"
+                className={`w-full px-6 py-4 flex items-center justify-between transition-colors ${isExpanded ? 'bg-skeuo-light/10' : 'hover:bg-skeuo-light/5'}`}
               >
-                <span className="font-semibold text-gray-100">{cluster.name}</span>
-                <svg
-                  className={`w-5 h-5 text-gray-300 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                <span className="font-bold text-gray-200 flex items-center gap-2">
+                   <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                   </svg>
+                  {cluster.name}
+                </span>
+                <div className={`w-8 h-8 rounded-full shadow-skeuo flex items-center justify-center transition-all duration-300 ${isExpanded ? 'shadow-skeuo-active text-skeuo-accent' : 'text-gray-400'}`}>
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
+                </div>
               </button>
               {isExpanded && (
-                <div className="px-5 py-4 border-t border-white/10 bg-black/20">
-                  <div className="space-y-2">
+                <div className="px-6 py-6 bg-skeuo-dark shadow-skeuo-inset border-t border-white/5">
+                  <div className="grid grid-cols-1 gap-4">
                     {selectedServicePorts.map((item, index) => (
                       <ServicePortRow
                         key={`${item.service}-${item.port.port}-${index}`}
@@ -132,7 +147,7 @@ function ServicePortRow({
   };
 
   const forwardId = `${cluster}-${namespace}-${service}-${port.port}-${parseInt(localPort, 10)}`;
-  const activeForward = activeForwards.find((f: PortForwardStatus) => f.id === forwardId);
+  const activeForward = activeForwards.find((f: { id: string; state: PortForwardState; localPort: number }) => f.id === forwardId);
   const isActive = activeForward && activeForward.state === PortForwardState.ACTIVE;
 
   const handleStart = async () => {
@@ -172,70 +187,94 @@ function ServicePortRow({
   };
 
   return (
-    <div className={`flex items-center gap-3 px-4 py-3 rounded-lg glass ${isActive ? 'border-green-300/40' : 'border-white/10'}`} style={isActive ? {
-      background: 'rgba(34, 197, 94, 0.2)',
-      backdropFilter: 'blur(12px)',
-      borderColor: 'rgba(34, 197, 94, 0.35)'
-    } : {}}>
-      <div className="flex-1 flex items-center gap-3 min-w-0">
-        <span className="text-sm font-semibold text-gray-100 truncate">{service}</span>
-        <span className="text-xs text-gray-300 whitespace-nowrap">
-          {port.name} ({port.port}/{port.protocol})
-        </span>
-        <span className="text-xs text-gray-400">→</span>
+    <div className={`
+      flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl transition-all duration-300
+      ${isActive 
+        ? 'bg-skeuo-bg shadow-skeuo-active border border-green-500/20' 
+        : 'bg-skeuo-bg shadow-skeuo border border-transparent'}
+    `}>
+      <div className="flex-1 min-w-0 flex items-center gap-3">
+        <div className={`w-3 h-3 rounded-full shadow-inner flex-shrink-0 ${isActive ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]' : 'bg-gray-600'}`} />
+        <div className="flex flex-col overflow-hidden">
+          <span className={`text-base font-bold truncate ${isActive ? 'text-green-400' : 'text-gray-200'}`}>{service}</span>
+          <div className="flex items-center text-xs text-gray-400 space-x-2">
+            <span className="font-medium">{port.name}</span>
+            <span>•</span>
+            <span>{port.port}/{port.protocol}</span>
+            <span>•</span>
+            <span>{namespace}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 sm:ml-auto">
+        <div className="flex items-center bg-skeuo-dark rounded-lg p-1 shadow-skeuo-inset">
+          <span className="text-xs text-gray-500 px-2">→</span>
         <input
           type="number"
           value={localPort}
           onChange={(e) => handlePortChange(e.target.value)}
-          className="w-20 px-2 py-1 text-xs glass-input rounded text-gray-100 placeholder-gray-400"
+            className="w-16 bg-transparent text-sm font-mono text-right text-gray-200 focus:outline-none px-1"
           placeholder="Local"
           min="1"
           max="65535"
           disabled={starting || isActive}
         />
-        {isActive && (
-          <span className="text-xs text-green-400 font-semibold whitespace-nowrap">● Active</span>
-        )}
       </div>
-      <div className="flex gap-2 flex-shrink-0">
+
         {isActive ? (
-          <>
+          <div className="flex gap-2">
             <button
               onClick={handleOpenBrowser}
-              className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg whitespace-nowrap text-gray-100"
-              style={{
-                background: 'rgba(34, 197, 94, 0.25)',
-                borderColor: 'rgba(34, 197, 94, 0.4)'
-              }}
+              className="skeuo-btn px-3 py-2 rounded-lg text-xs font-bold text-gray-200 hover:text-white flex items-center gap-1"
+              title="Open in Browser"
             >
-              Open
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
             </button>
             <button
               onClick={handleStop}
-              className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg whitespace-nowrap text-gray-100"
-              style={{
-                background: 'rgba(220, 38, 38, 0.25)',
-                borderColor: 'rgba(220, 38, 38, 0.4)'
-              }}
+              className="skeuo-btn px-3 py-2 rounded-lg text-xs font-bold text-red-400 hover:text-red-300 flex items-center gap-1 shadow-none hover:shadow-skeuo active:shadow-skeuo-active"
+              title="Stop Forwarding"
             >
-              Stop
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+              </svg>
             </button>
-          </>
+          </div>
         ) : (
           <button
             onClick={handleStart}
             disabled={starting || !localPort}
-            className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-gray-100"
-            style={{
-              background: starting || !localPort ? 'rgba(156, 163, 175, 0.25)' : 'rgba(59, 130, 246, 0.25)',
-              borderColor: starting || !localPort ? 'rgba(156, 163, 175, 0.4)' : 'rgba(59, 130, 246, 0.4)'
-            }}
+            className={`
+              px-5 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-2 transition-all
+              ${starting || !localPort 
+                ? 'bg-gray-600 shadow-none cursor-not-allowed opacity-50' 
+                : 'bg-skeuo-accent skeuo-btn hover:brightness-110'}
+            `}
           >
-            {starting ? 'Starting...' : 'Start'}
+            {starting ? (
+              <>
+                <svg className="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Starting
+              </>
+            ) : (
+              <>
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Start
+              </>
+            )}
           </button>
         )}
       </div>
     </div>
   );
 }
-

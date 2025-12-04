@@ -6,15 +6,28 @@ export default {
   ],
   theme: {
     extend: {
-      backdropBlur: {
-        xs: '2px',
+      colors: {
+        skeuo: {
+          bg: '#2e323b',
+          dark: '#252830',
+          light: '#373c46',
+          dim: '#21242a',
+          highlight: '#3b404b',
+          accent: '#6d5dfc', // A nice purple/blue accent
+        }
       },
       boxShadow: {
-        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-        'glass-lg': '0 12px 40px 0 rgba(0, 0, 0, 0.5)',
+        'skeuo': '6px 6px 12px #252830, -6px -6px 12px #373c46',
+        'skeuo-sm': '3px 3px 6px #252830, -3px -3px 6px #373c46',
+        'skeuo-inset': 'inset 6px 6px 12px #252830, inset -6px -6px 12px #373c46',
+        'skeuo-inset-sm': 'inset 3px 3px 6px #252830, inset -3px -3px 6px #373c46',
+        'skeuo-active': 'inset 4px 4px 8px #252830, inset -4px -4px 8px #373c46',
       },
+      backgroundImage: {
+        'skeuo-gradient': 'linear-gradient(145deg, #31363f, #292d35)',
+        'skeuo-gradient-active': 'linear-gradient(145deg, #292d35, #31363f)',
+      }
     },
   },
   plugins: [],
 }
-

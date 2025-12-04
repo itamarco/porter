@@ -142,20 +142,27 @@ export function Groups() {
   if (groups.length === 0 && !showForm) {
     return (
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold text-gray-100">Groups</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-200 tracking-wide">Groups</h2>
           <button
             onClick={handleCreateGroup}
-            className="px-4 py-2 text-sm font-semibold glass-button rounded-lg text-gray-100"
-            style={{
-              background: 'rgba(59, 130, 246, 0.25)',
-              borderColor: 'rgba(59, 130, 246, 0.4)'
-            }}
+            className="skeuo-btn px-5 py-2.5 text-sm font-bold text-skeuo-accent hover:text-white rounded-xl flex items-center gap-2"
           >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
             Create Group
           </button>
         </div>
-        <p className="text-gray-300 text-base">No groups created yet. Create a group to manage multiple services together.</p>
+        <div className="skeuo-card p-8 text-center shadow-skeuo-inset">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-skeuo-bg shadow-skeuo flex items-center justify-center text-gray-500">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <p className="text-gray-300 font-medium">No groups created</p>
+          <p className="text-sm text-gray-500 mt-2">Create a group to manage multiple services together.</p>
+        </div>
         {showForm && (
           <GroupForm
             group={editingGroup}
@@ -168,16 +175,15 @@ export function Groups() {
 
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-semibold text-gray-100">Groups</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-200 tracking-wide">Groups</h2>
         <button
           onClick={handleCreateGroup}
-          className="px-4 py-2 text-sm font-semibold glass-button rounded-lg text-gray-100"
-          style={{
-            background: 'rgba(59, 130, 246, 0.25)',
-            borderColor: 'rgba(59, 130, 246, 0.4)'
-          }}
+          className="skeuo-btn px-5 py-2.5 text-sm font-bold text-skeuo-accent hover:text-white rounded-xl flex items-center gap-2"
         >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
           Create Group
         </button>
       </div>
@@ -189,7 +195,7 @@ export function Groups() {
         />
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-6">
         {groups.map((group) => {
           const groupServicePorts = getGroupServicePorts(group);
           const activeForwardsForGroup = getGroupActiveForwards(group);
@@ -201,58 +207,91 @@ export function Groups() {
           const isStopping = stoppingAll[group.id] || false;
 
           return (
-            <div key={group.id} className="glass-card rounded-xl overflow-hidden">
-              <div className="px-5 py-4 flex items-center justify-between">
+            <div key={group.id} className="skeuo-card overflow-hidden transition-all duration-300">
+              <div className="px-6 py-5 flex items-center justify-between">
                 <button
                   onClick={() => toggleGroup(group.id)}
-                  className="flex-1 flex items-center justify-between glass-button rounded-lg px-3 py-2"
+                  className={`flex-1 flex items-center gap-4 text-left outline-none group`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="font-semibold text-gray-100">{group.name}</span>
-                    <span className="text-xs text-gray-400">
-                      {groupServicePorts.length} service{groupServicePorts.length !== 1 ? 's' : ''}
-                    </span>
-                    {allActive && (
-                      <span className="text-xs text-green-400 font-semibold">● All Active</span>
-                    )}
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                    allActive ? 'bg-skeuo-bg shadow-skeuo-active text-green-400' : 'bg-skeuo-bg shadow-skeuo text-gray-500'
+                  }`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
                   </div>
+                  <div>
+                  <div className="flex items-center gap-3">
+                      <span className="font-bold text-lg text-gray-200 group-hover:text-white transition-colors">{group.name}</span>
+                      {allActive && (
+                        <span className="skeuo-badge px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold text-green-400 bg-green-400/10 border border-green-400/20 shadow-none">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs font-medium text-gray-500">
+                      {groupServicePorts.length} service{groupServicePorts.length !== 1 ? 's' : ''} configured
+                    </span>
+                  </div>
+                  
                   <svg
-                    className={`w-5 h-5 text-gray-300 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    className={`w-5 h-5 text-gray-400 ml-2 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                <div className="flex gap-2 ml-3">
+
+                <div className="flex gap-3 ml-6">
                   <button
                     onClick={() => handleStartAll(group)}
                     disabled={isStarting || isStopping || allActive}
-                    className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-gray-100"
-                    style={{
-                      background: isStarting || allActive ? 'rgba(156, 163, 175, 0.25)' : 'rgba(34, 197, 94, 0.25)',
-                      borderColor: isStarting || allActive ? 'rgba(156, 163, 175, 0.4)' : 'rgba(34, 197, 94, 0.4)'
-                    }}
+                    className={`
+                      p-2.5 rounded-xl transition-all
+                      ${isStarting || allActive 
+                        ? 'text-gray-600 bg-skeuo-bg shadow-none cursor-not-allowed' 
+                        : 'skeuo-btn text-green-400 hover:text-green-300'}
+                    `}
+                    title="Start All"
                   >
-                    {isStarting ? 'Starting...' : 'Start All'}
+                    {isStarting ? (
+                      <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      </svg>
+                    )}
                   </button>
                   <button
                     onClick={() => handleStopAll(group)}
                     disabled={isStopping || activeForwardsForGroup.length === 0}
-                    className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-gray-100"
-                    style={{
-                      background: isStopping || activeForwardsForGroup.length === 0 ? 'rgba(156, 163, 175, 0.25)' : 'rgba(220, 38, 38, 0.25)',
-                      borderColor: isStopping || activeForwardsForGroup.length === 0 ? 'rgba(156, 163, 175, 0.4)' : 'rgba(220, 38, 38, 0.4)'
-                    }}
+                    className={`
+                      p-2.5 rounded-xl transition-all
+                      ${isStopping || activeForwardsForGroup.length === 0 
+                        ? 'text-gray-600 bg-skeuo-bg shadow-none cursor-not-allowed' 
+                        : 'skeuo-btn text-red-400 hover:text-red-300'}
+                    `}
+                    title="Stop All"
                   >
-                    {isStopping ? 'Stopping...' : 'Stop All'}
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                    </svg>
                   </button>
+                  <div className="w-px h-8 bg-gray-700 mx-1 self-center"></div>
                   <button
                     onClick={() => handleEditGroup(group)}
-                    className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg whitespace-nowrap text-gray-100"
+                    className="skeuo-btn p-2.5 rounded-xl text-gray-400 hover:text-white"
+                    title="Edit Group"
                   >
-                    Edit
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
                   </button>
                   <button
                     onClick={() => {
@@ -260,21 +299,21 @@ export function Groups() {
                         deleteGroup(group.id);
                       }
                     }}
-                    className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg whitespace-nowrap text-gray-100"
-                    style={{
-                      background: 'rgba(220, 38, 38, 0.25)',
-                      borderColor: 'rgba(220, 38, 38, 0.4)'
-                    }}
+                    className="skeuo-btn p-2.5 rounded-xl text-gray-400 hover:text-red-400"
+                    title="Delete Group"
                   >
-                    Delete
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                   </button>
                 </div>
               </div>
+
               {isExpanded && (
-                <div className="px-5 py-4 border-t border-white/10 bg-black/20">
-                  <div className="space-y-2">
+                <div className="px-6 py-5 bg-skeuo-dark shadow-skeuo-inset border-t border-white/5">
+                  <div className="space-y-3">
                     {groupServicePorts.length === 0 ? (
-                      <p className="text-sm text-gray-300">No services in this group</p>
+                      <p className="text-sm text-gray-400 italic">No services in this group</p>
                     ) : (
                       groupServicePorts.map((gsp, index) => {
                         if (!gsp) return null;
@@ -290,25 +329,23 @@ export function Groups() {
                         return (
                           <div
                             key={`${gsp.cluster}-${gsp.namespace}-${gsp.service}-${gsp.port}-${index}`}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg glass ${isActive ? 'border-green-300/40' : 'border-white/10'}`}
-                            style={isActive ? {
-                              background: 'rgba(34, 197, 94, 0.2)',
-                              backdropFilter: 'blur(12px)',
-                              borderColor: 'rgba(34, 197, 94, 0.35)'
-                            } : {}}
+                            className={`
+                              flex items-center gap-4 px-4 py-3 rounded-xl transition-all
+                              ${isActive 
+                                ? 'bg-skeuo-bg shadow-skeuo-active border border-green-500/20' 
+                                : 'bg-skeuo-bg shadow-skeuo border border-transparent'}
+                            `}
                           >
+                            <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]' : 'bg-gray-600'}`} />
                             <div className="flex-1 flex items-center gap-3 min-w-0">
-                              <span className="text-xs text-gray-400">{cluster?.name || gsp.cluster}</span>
-                              <span className="text-xs text-gray-400">/</span>
-                              <span className="text-xs text-gray-400">{gsp.namespace}</span>
-                              <span className="text-xs text-gray-400">/</span>
-                              <span className="text-sm font-semibold text-gray-100 truncate">{gsp.service}</span>
-                              <span className="text-xs text-gray-300 whitespace-nowrap">
+                              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{cluster?.name || gsp.cluster}</span>
+                              <span className="text-xs text-gray-600">/</span>
+                              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{gsp.namespace}</span>
+                              <span className="text-xs text-gray-600">/</span>
+                              <span className={`text-sm font-bold truncate ${isActive ? 'text-green-400' : 'text-gray-200'}`}>{gsp.service}</span>
+                              <span className="text-xs text-gray-400 whitespace-nowrap ml-auto">
                                 {gsp.portInfo.name} ({gsp.port}/{gsp.portInfo.protocol})
                               </span>
-                              {isActive && (
-                                <span className="text-xs text-green-400 font-semibold whitespace-nowrap">● Active</span>
-                              )}
                             </div>
                           </div>
                         );
@@ -324,4 +361,3 @@ export function Groups() {
     </div>
   );
 }
-
