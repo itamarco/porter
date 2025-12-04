@@ -2,10 +2,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { app } from 'electron';
 
+export interface Group {
+  id: string;
+  name: string;
+  servicePorts: string[];
+}
+
 export interface AppConfig {
   configuredNamespaces: Record<string, string[]>;
   portOverrides: Record<string, number>;
   selectedServices: Record<string, string[]>;
+  groups?: Group[];
 }
 
 const CONFIG_FILE_NAME = 'config.json';
@@ -21,7 +28,13 @@ export function loadConfig(): AppConfig {
   try {
     if (fs.existsSync(configPath)) {
       const data = fs.readFileSync(configPath, 'utf-8');
-      return JSON.parse(data);
+      const config = JSON.parse(data);
+      return {
+        configuredNamespaces: config.configuredNamespaces || {},
+        portOverrides: config.portOverrides || {},
+        selectedServices: config.selectedServices || {},
+        groups: config.groups || [],
+      };
     }
   } catch (error) {
     console.error('Error loading config:', error);
@@ -31,6 +44,7 @@ export function loadConfig(): AppConfig {
     configuredNamespaces: {},
     portOverrides: {},
     selectedServices: {},
+    groups: [],
   };
 }
 

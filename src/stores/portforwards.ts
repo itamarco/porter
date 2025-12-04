@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PortForwardStatus, ClusterInfo, ServiceInfo, AppConfig } from '../types/electron';
+import { PortForwardStatus, ClusterInfo, ServiceInfo, AppConfig, Group } from '../types/electron';
 
 interface PortForwardStore {
   clusters: ClusterInfo[];
@@ -10,6 +10,7 @@ interface PortForwardStore {
   services: Record<string, ServiceInfo[]>;
   selectedServices: Record<string, string[]>;
   activeForwards: PortForwardStatus[];
+  groups: Group[];
   loading: boolean;
   error: string | null;
   
@@ -26,6 +27,9 @@ interface PortForwardStore {
   updateForward: (forward: PortForwardStatus) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  createGroup: (name: string, servicePorts: string[]) => void;
+  updateGroup: (id: string, name: string, servicePorts: string[]) => void;
+  deleteGroup: (id: string) => void;
   loadConfig: () => Promise<void>;
   saveConfig: () => Promise<void>;
 }
@@ -39,6 +43,7 @@ export const usePortForwardStore = create<PortForwardStore>()((set, get) => ({
   services: {},
   selectedServices: {},
   activeForwards: [],
+  groups: [],
   loading: false,
   error: null,
 
@@ -128,6 +133,43 @@ export const usePortForwardStore = create<PortForwardStore>()((set, get) => ({
     }),
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
+  createGroup: (name, servicePorts) =>
+    set((state) => {
+      const newGroup: Group = {
+        id: `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name,
+        servicePorts,
+      };
+      const updated = {
+        groups: [...state.groups, newGroup],
+      };
+      setTimeout(() => {
+        usePortForwardStore.getState().saveConfig();
+      }, 100);
+      return updated;
+    }),
+  updateGroup: (id, name, servicePorts) =>
+    set((state) => {
+      const updated = {
+        groups: state.groups.map((group) =>
+          group.id === id ? { ...group, name, servicePorts } : group
+        ),
+      };
+      setTimeout(() => {
+        usePortForwardStore.getState().saveConfig();
+      }, 100);
+      return updated;
+    }),
+  deleteGroup: (id) =>
+    set((state) => {
+      const updated = {
+        groups: state.groups.filter((group) => group.id !== id),
+      };
+      setTimeout(() => {
+        usePortForwardStore.getState().saveConfig();
+      }, 100);
+      return updated;
+    }),
   loadConfig: async () => {
     if (!window.electronAPI) return;
     try {
@@ -136,6 +178,7 @@ export const usePortForwardStore = create<PortForwardStore>()((set, get) => ({
         configuredNamespaces: config.configuredNamespaces || {},
         portOverrides: config.portOverrides || {},
         selectedServices: config.selectedServices || {},
+        groups: config.groups || [],
       });
     } catch (error) {
       console.error('Failed to load config:', error);
@@ -149,6 +192,7 @@ export const usePortForwardStore = create<PortForwardStore>()((set, get) => ({
         configuredNamespaces: state.configuredNamespaces,
         portOverrides: state.portOverrides,
         selectedServices: state.selectedServices,
+        groups: state.groups,
       };
       await window.electronAPI.saveConfig(config);
     } catch (error) {

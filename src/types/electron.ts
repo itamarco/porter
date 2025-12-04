@@ -42,10 +42,17 @@ export interface PortForwardStatus extends PortForwardConfig {
   nextRetryAt?: Date;
 }
 
+export interface Group {
+  id: string;
+  name: string;
+  servicePorts: string[];
+}
+
 export interface AppConfig {
   configuredNamespaces: Record<string, string[]>;
   portOverrides: Record<string, number>;
   selectedServices: Record<string, string[]>;
+  groups: Group[];
 }
 
 export interface ElectronAPI {
