@@ -1,24 +1,32 @@
-# Porter - K8s Port Forward Manager
+# 🚢 Porter
 
-A macOS application for easily managing multiple Kubernetes port-forwards with a modern GUI.
+> A beautiful macOS app for managing Kubernetes port-forwards with ease
 
-## Features
+---
 
-- **Cluster Discovery**: Automatically discovers available Kubernetes clusters from your kubeconfig
-- **Namespace Management**: Configure namespaces per cluster for easy access
-- **Service Browser**: Browse services and their ports for selected namespaces
-- **Port Forward Control**: Start/stop port-forwards with custom local port override
-- **Robust Error Handling**: Automatic reconnection with exponential backoff
-- **Status Dashboard**: Real-time status of active port-forwards with connection health checks
+## ✨ Features
 
-## Requirements
+| Feature                     | Description                                           |
+| --------------------------- | ----------------------------------------------------- |
+| 🔍 **Cluster Discovery**    | Automatically finds all clusters from your kubeconfig |
+| 📁 **Namespace Management** | Configure namespaces per cluster for quick access     |
+| 🌐 **Service Browser**      | Browse services and ports across your namespaces      |
+| 🔌 **Port Forward Control** | Start/stop forwards with custom local port override   |
+| 🔄 **Auto Reconnect**       | Automatic retry with exponential backoff              |
+| 📊 **Live Dashboard**       | Real-time status with connection health checks        |
 
-- macOS
-- Node.js 18+
-- kubectl installed and configured
-- Valid kubeconfig file (~/.kube/config)
+---
 
-## Development
+## 📋 Requirements
+
+- 🍎 macOS
+- 📦 Node.js 18+
+- ☸️ kubectl installed and configured
+- 🔑 Valid kubeconfig (`~/.kube/config`)
+
+---
+
+## 🛠️ Development
 
 ```bash
 # Install dependencies
@@ -31,37 +39,54 @@ npm run dev
 npm run build
 ```
 
-## Publishing
+---
 
-See [docs/PUBLISHING.md](docs/PUBLISHING.md) for detailed instructions on:
-- Building distributable DMG files
-- Code signing and notarization
-- Publishing to GitHub Releases
-- Setting up CI/CD for automated releases
+## 📖 Publishing
 
-## Usage
+See [docs/PUBLISHING.md](docs/PUBLISHING.md) for:
 
-1. Launch the application
-2. Select a cluster from the dropdown
-3. Add namespaces you want to manage
-4. Browse services in the configured namespaces
-5. Click "Start" on any service port to create a port-forward
-6. Monitor active port-forwards in the dashboard
-7. Stop port-forwards when done
+- 📀 Building distributable DMG files
+- ✍️ Code signing and notarization
+- 🚀 Publishing to GitHub Releases
+- ⚙️ CI/CD setup for automated releases
 
-## Configuration
+---
 
-The app automatically saves your namespace configurations to `~/Library/Application Support/porter/config.json`.
+## 🚀 Quick Start
 
-## Port Forward Features
+1. 🖥️ Launch Porter
+2. ☸️ Select a cluster from the dropdown
+3. ➕ Add namespaces you want to manage
+4. 🔎 Browse services in the configured namespaces
+5. ▶️ Click **Start** on any service port to create a port-forward
+6. 👀 Monitor active forwards in the dashboard
+7. ⏹️ Stop port-forwards when done
 
-- **Automatic Reconnection**: If a port-forward fails, it will automatically retry with exponential backoff (up to 5 retries)
-- **Health Checks**: Periodic TCP probes to ensure the connection is active
-- **Connection Timeout**: 30-second timeout for initial connection establishment
-- **Status Indicators**: Color-coded status (green=active, yellow=reconnecting, red=failed)
-- **Manual Retry**: Retry button available when a port-forward fails
+---
 
-## Project Structure
+## ⚙️ Configuration
+
+Your namespace configs are saved automatically to:
+
+```
+~/Library/Application Support/porter/config.json
+```
+
+---
+
+## 🔌 Port Forward Features
+
+| Feature                   | Details                                            |
+| ------------------------- | -------------------------------------------------- |
+| 🔄 **Auto Reconnect**     | Retries with exponential backoff (up to 5 retries) |
+| 💓 **Health Checks**      | Periodic TCP probes ensure connection is alive     |
+| ⏱️ **Connection Timeout** | 30-second timeout for initial connection           |
+| 🚦 **Status Indicators**  | 🟢 Active · 🟡 Reconnecting · 🔴 Failed            |
+| 🔁 **Manual Retry**       | Retry button available on failed forwards          |
+
+---
+
+## 📂 Project Structure
 
 ```
 porter/
@@ -78,7 +103,8 @@ porter/
 └── dist-electron/     # Compiled Electron code
 ```
 
-## License
+---
+
+## 📄 License
 
 MIT
-
