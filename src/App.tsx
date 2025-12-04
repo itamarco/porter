@@ -8,16 +8,20 @@ function App() {
   const { error } = usePortForwardStore();
 
   return (
-    <div className="h-screen w-screen bg-gray-50 overflow-y-auto">
+    <div className="h-screen w-screen overflow-y-auto">
       <div className="p-8 max-w-6xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Porter</h1>
-          <p className="text-gray-600 mt-1">K8s Port Forward Manager</p>
+        <div className="mb-8 glass-card rounded-2xl p-6">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">Porter</h1>
+          <p className="text-gray-700 text-lg">K8s Port Forward Manager</p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
+          <div className="mb-6 p-4 glass rounded-xl" style={{
+            background: 'rgba(220, 38, 38, 0.15)',
+            backdropFilter: 'blur(12px)',
+            borderColor: 'rgba(220, 38, 38, 0.3)'
+          }}>
+            <p className="font-semibold text-red-900">{error}</p>
           </div>
         )}
 

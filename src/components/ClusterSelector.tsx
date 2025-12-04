@@ -7,14 +7,14 @@ export function ClusterSelector() {
   const { setSelectedCluster } = useK8s();
 
   return (
-    <div className="mb-6">
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+    <div className="mb-8">
+      <label className="block text-base font-semibold text-gray-800 mb-3">
         Select Cluster
       </label>
       <select
         value={selectedCluster || ''}
         onChange={(e) => setSelectedCluster(e.target.value || null)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="w-full px-4 py-3 glass-select rounded-xl text-gray-800 font-medium"
       >
         <option value="">-- Select a cluster --</option>
         {clusters.map((cluster: ClusterInfo) => (

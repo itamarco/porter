@@ -17,11 +17,11 @@ export function NamespaceConfig() {
   };
 
   return (
-    <div className="mb-6">
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+    <div className="mb-8">
+      <label className="block text-base font-semibold text-gray-800 mb-3">
         Configured Namespaces
       </label>
-      <div className="flex gap-2 mb-2">
+      <div className="flex gap-3 mb-3">
         <select
           onChange={(e) => {
             if (e.target.value) {
@@ -29,7 +29,7 @@ export function NamespaceConfig() {
               e.target.value = '';
             }
           }}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="flex-1 px-4 py-3 glass-select rounded-xl text-gray-800 font-medium"
         >
           <option value="">-- Add namespace --</option>
           {namespaces
@@ -41,16 +41,20 @@ export function NamespaceConfig() {
             ))}
         </select>
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3">
         {configured.map((ns: string) => (
           <span
             key={ns}
-            className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+            className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold glass-chip text-gray-800"
+            style={{
+              background: 'rgba(59, 130, 246, 0.2)',
+              borderColor: 'rgba(59, 130, 246, 0.35)'
+            }}
           >
             {ns}
             <button
               onClick={() => removeNamespace(selectedCluster, ns)}
-              className="ml-2 text-blue-600 hover:text-blue-800"
+              className="ml-3 text-gray-600 hover:text-gray-800 transition-colors font-bold text-lg"
             >
               ×
             </button>
