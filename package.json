@@ -7,13 +7,14 @@
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
     "dev:vite": "vite",
     "dev:electron": "wait-on http://localhost:5173 && npm run build:electron && NODE_ENV=development electron .",
-    "build": "tsc && vite build && electron-builder",
+    "build": "tsc && vite build && npm run prepare:gke-plugin && electron-builder",
     "build:electron": "tsc -p electron/tsconfig.json",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "prepare:gke-plugin": "node scripts/fetch-gke-plugin.js"
   },
   "keywords": [
     "kubernetes",
@@ -45,6 +46,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
+    "tar": "^6.1.11",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.2",
     "vite": "^7.2.6",

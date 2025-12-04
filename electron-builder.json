@@ -12,6 +12,12 @@
     "!dist-electron/**/*.test.js",
     "!dist-electron/__tests__/**"
   ],
+  "extraResources": [
+    {
+      "from": "electron/resources/bin",
+      "to": "bin"
+    }
+  ],
   "extraMetadata": {
     "main": "dist-electron/main.js"
   },
