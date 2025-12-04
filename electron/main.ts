@@ -2,6 +2,7 @@ import fs from "fs";
 import { app, BrowserWindow, ipcMain } from "electron";
 import os from "os";
 import path from "path";
+import { logger } from "./logger";
 import { setupK8sHandlers } from "./k8s/handlers";
 import { PortForwardManager } from "./k8s/portforward";
 import { K8sClient } from "./k8s/client";
@@ -46,7 +47,8 @@ let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
   const preloadPath = path.join(__dirname, "preload.js");
-  console.log("Preload path:", preloadPath);
+  logger.info("Preload path:", preloadPath);
+  logger.info("Log file location:", logger.getLogPath());
 
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -90,3 +92,7 @@ app.on("window-all-closed", () => {
 });
 
 setupK8sHandlers(ipcMain, portForwardManager);
+
+ipcMain.handle("get-log-path", async () => {
+  return logger.getLogPath();
+});

@@ -65,6 +65,7 @@ export interface ElectronAPI {
   loadConfig: () => Promise<AppConfig>;
   saveConfig: (config: AppConfig) => Promise<boolean>;
   openInBrowser: (url: string) => Promise<boolean>;
+  getLogPath: () => Promise<string>;
   onPortForwardUpdate: (callback: (data: PortForwardStatus) => void) => void;
   removePortForwardListener: () => void;
 }

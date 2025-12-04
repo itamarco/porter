@@ -74,6 +74,44 @@ Your namespace configs are saved automatically to:
 
 ---
 
+## 📝 Logging
+
+Porter logs all operations to help with debugging. Logs are automatically written to files in production.
+
+### Log File Location
+
+Logs are stored at:
+
+```
+~/Library/Logs/porter/main.log
+```
+
+### Viewing Logs
+
+**In Development:**
+
+- Logs appear in the terminal/console where you run `npm run dev`
+- DevTools console also shows logs
+
+**In Production:**
+
+- View logs using macOS Console.app:
+  1. Open **Console.app** (Applications > Utilities)
+  2. Search for "porter" or navigate to your user logs
+  3. Select `~/Library/Logs/porter/main.log`
+- Or open the log file directly in a text editor
+- You can also get the log path programmatically via `window.electronAPI.getLogPath()`
+
+### Log Levels
+
+- **Info**: Normal operations (service fetching, port-forward start/stop, status changes)
+- **Error**: Errors and failures (API errors, connection failures, process errors)
+- **Debug**: Detailed debugging information (only in development mode)
+
+All logs include timestamps and are prefixed with module names like `[getServices]`, `[PortForward]`, `[IPC]` for easy filtering.
+
+---
+
 ## 🔌 Port Forward Features
 
 | Feature                   | Details                                            |

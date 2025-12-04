@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadConfig: () => ipcRenderer.invoke('load-config'),
   saveConfig: (config: any) => ipcRenderer.invoke('save-config', config),
   openInBrowser: (url: string) => ipcRenderer.invoke('open-in-browser', url),
+  getLogPath: () => ipcRenderer.invoke('get-log-path'),
   onPortForwardUpdate: (callback: (data: any) => void) => {
     ipcRenderer.on('port-forward-update', (_event, data) => callback(data));
   },
