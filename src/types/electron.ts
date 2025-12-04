@@ -64,10 +64,18 @@ export interface ElectronAPI {
   getActiveForwards: () => Promise<PortForwardStatus[]>;
   loadConfig: () => Promise<AppConfig>;
   saveConfig: (config: AppConfig) => Promise<boolean>;
+  resetConfig: () => Promise<boolean>;
+  exportConfig: () => Promise<AppConfig>;
+  importConfig: (config: AppConfig) => Promise<boolean>;
+  exportConfigToFile: () => Promise<{ canceled: boolean; filePath?: string }>;
+  importConfigFromFile: () => Promise<{ canceled: boolean; config?: AppConfig }>;
   openInBrowser: (url: string) => Promise<boolean>;
   getLogPath: () => Promise<string>;
   onPortForwardUpdate: (callback: (data: PortForwardStatus) => void) => void;
+  onConfigReset: (callback: () => void) => void;
+  onConfigImported: (callback: () => void) => void;
   removePortForwardListener: () => void;
+  removeConfigListeners: () => void;
 }
 
 declare global {

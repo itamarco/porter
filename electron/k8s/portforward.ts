@@ -1,15 +1,15 @@
-import { spawn, ChildProcess } from 'child_process';
-import * as net from 'net';
-import { EventEmitter } from 'events';
-import { K8sClient } from './client';
-import { logger } from '../logger';
+import { spawn, ChildProcess } from "child_process";
+import * as net from "net";
+import { EventEmitter } from "events";
+import { K8sClient } from "./client";
+import { logger } from "../logger";
 
 export enum PortForwardState {
-  CONNECTING = 'CONNECTING',
-  ACTIVE = 'ACTIVE',
-  RECONNECTING = 'RECONNECTING',
-  FAILED = 'FAILED',
-  STOPPED = 'STOPPED',
+  CONNECTING = "CONNECTING",
+  ACTIVE = "ACTIVE",
+  RECONNECTING = "RECONNECTING",
+  FAILED = "FAILED",
+  STOPPED = "STOPPED",
 }
 
 export interface PortForwardConfig {
@@ -43,7 +43,10 @@ export class PortForwardInstance extends EventEmitter {
   private readonly healthCheckIntervalMs = 5000;
   private podName: string | null = null;
 
-  constructor(private config: PortForwardConfig, private k8sClient?: K8sClient) {
+  constructor(
+    private config: PortForwardConfig,
+    private k8sClient?: K8sClient
+  ) {
     super();
   }
 
@@ -56,7 +59,9 @@ export class PortForwardInstance extends EventEmitter {
       ...this.config,
       state: this.state,
       retryCount: this.retryCount,
-      nextRetryAt: this.reconnectTimeout ? new Date(Date.now() + this.retryDelayMs) : undefined,
+      nextRetryAt: this.reconnectTimeout
+        ? new Date(Date.now() + this.retryDelayMs)
+        : undefined,
     };
   }
 
@@ -66,12 +71,16 @@ export class PortForwardInstance extends EventEmitter {
     }
 
     this.state = PortForwardState.CONNECTING;
-    this.emit('status-change', this.getStatus());
+    this.emit("status-change", this.getStatus());
 
     this.connectionTimeout = setTimeout(() => {
       if (this.state === PortForwardState.CONNECTING) {
-        logger.error(`[PortForward] Connection timeout for ${this.config.id}: port-forward did not establish within ${this.connectionTimeoutMs}ms`);
-        this.handleError('Connection timeout: port-forward did not establish within 30s');
+        logger.error(
+          `[PortForward] Connection timeout for ${this.config.id}: port-forward did not establish within ${this.connectionTimeoutMs}ms`
+        );
+        this.handleError(
+          "Connection timeout: port-forward did not establish within 30s"
+        );
       }
     }, this.connectionTimeoutMs);
 
@@ -81,60 +90,75 @@ export class PortForwardInstance extends EventEmitter {
 
   private async spawnProcess() {
     const podName = await this.getPodName();
-    
+
     if (!podName) {
-      logger.error(`[PortForward] No pod found for service ${this.config.service} in namespace ${this.config.namespace}, cluster ${this.config.cluster}`);
-      this.handleError('No pod found for service');
+      logger.error(
+        `[PortForward] No pod found for service ${this.config.service} in namespace ${this.config.namespace}, cluster ${this.config.cluster}`
+      );
+      this.handleError("No pod found for service");
       return;
     }
 
     const args = [
-      'port-forward',
+      "port-forward",
       `pod/${podName}`,
       `${this.config.localPort}:${this.config.servicePort}`,
-      '--namespace',
+      "--namespace",
       this.config.namespace,
-      '--context',
+      "--context",
       this.config.cluster,
     ];
 
-    this.process = spawn('kubectl', args, {
-      stdio: ['ignore', 'pipe', 'pipe'],
+    this.process = spawn("kubectl", args, {
+      stdio: ["ignore", "pipe", "pipe"],
     });
 
-    this.process.stdout?.on('data', (data: Buffer) => {
+    this.process.stdout?.on("data", (data: Buffer) => {
       const output = data.toString();
-      if (output.includes('Forwarding from')) {
+      if (output.includes("Forwarding from")) {
         this.clearConnectionTimeout();
-        if (this.state === PortForwardState.CONNECTING || this.state === PortForwardState.RECONNECTING) {
+        if (
+          this.state === PortForwardState.CONNECTING ||
+          this.state === PortForwardState.RECONNECTING
+        ) {
           this.state = PortForwardState.ACTIVE;
           this.retryCount = 0;
           this.retryDelayMs = 1000;
-          this.emit('status-change', this.getStatus());
+          this.emit("status-change", this.getStatus());
         }
       }
     });
 
-    this.process.stderr?.on('data', (data: Buffer) => {
+    this.process.stderr?.on("data", (data: Buffer) => {
       const error = data.toString();
-      if (error.includes('error') || error.includes('Error')) {
-        logger.error(`[PortForward] Error detected in kubectl stderr for ${this.config.id}:`, error.trim());
+      if (error.includes("error") || error.includes("Error")) {
+        logger.error(
+          `[PortForward] Error detected in kubectl stderr for ${this.config.id}:`,
+          error.trim()
+        );
         this.handleError(error);
       }
     });
 
-    this.process.on('exit', (code, signal) => {
+    this.process.on("exit", (code, signal) => {
       if (code !== 0 && code !== null) {
-        logger.error(`[PortForward] kubectl process exited with non-zero code ${code} for ${this.config.id}`);
+        logger.error(
+          `[PortForward] kubectl process exited with non-zero code ${code} for ${this.config.id}`
+        );
         this.handleError(`Process exited with code ${code}`);
       } else if (signal) {
-        logger.error(`[PortForward] kubectl process killed by signal ${signal} for ${this.config.id}`);
+        logger.error(
+          `[PortForward] kubectl process killed by signal ${signal} for ${this.config.id}`
+        );
         this.handleError(`Process killed by signal ${signal}`);
       }
     });
 
-    this.process.on('error', (error) => {
-      logger.error(`[PortForward] Failed to spawn kubectl process for ${this.config.id}:`, error);
+    this.process.on("error", (error) => {
+      logger.error(
+        `[PortForward] Failed to spawn kubectl process for ${this.config.id}:`,
+        error
+      );
       logger.error(`[PortForward] Error details:`, {
         message: error.message,
         stack: error.stack,
@@ -150,31 +174,31 @@ export class PortForwardInstance extends EventEmitter {
 
     return new Promise((resolve) => {
       const args = [
-        'get',
-        'endpoints',
+        "get",
+        "endpoints",
         this.config.service,
-        '--namespace',
+        "--namespace",
         this.config.namespace,
-        '--context',
+        "--context",
         this.config.cluster,
-        '-o',
-        'jsonpath={.subsets[0].addresses[0].targetRef.name}',
+        "-o",
+        "jsonpath={.subsets[0].addresses[0].targetRef.name}",
       ];
 
-      const proc = spawn('kubectl', args, {
-        stdio: ['ignore', 'pipe', 'pipe'],
+      const proc = spawn("kubectl", args, {
+        stdio: ["ignore", "pipe", "pipe"],
       });
 
-      let output = '';
-      proc.stdout?.on('data', (data: Buffer) => {
+      let output = "";
+      proc.stdout?.on("data", (data: Buffer) => {
         output += data.toString();
       });
 
-      proc.stderr?.on('data', (data: Buffer) => {
+      proc.stderr?.on("data", (data: Buffer) => {
         const error = data.toString();
       });
 
-      proc.on('exit', (code) => {
+      proc.on("exit", (code) => {
         if (code === 0 && output.trim()) {
           this.podName = output.trim();
           resolve(this.podName);
@@ -183,8 +207,11 @@ export class PortForwardInstance extends EventEmitter {
         }
       });
 
-      proc.on('error', (error) => {
-        logger.error(`[PortForward] Error spawning kubectl for pod lookup:`, error);
+      proc.on("error", (error) => {
+        logger.error(
+          `[PortForward] Error spawning kubectl for pod lookup:`,
+          error
+        );
         logger.error(`[PortForward] Error details:`, {
           message: error.message,
           stack: error.stack,
@@ -196,43 +223,48 @@ export class PortForwardInstance extends EventEmitter {
 
   private tryAlternativePodSelection(resolve: (value: string | null) => void) {
     const args = [
-      'get',
-      'pods',
-      '--namespace',
+      "get",
+      "pods",
+      "--namespace",
       this.config.namespace,
-      '--context',
+      "--context",
       this.config.cluster,
-      '--field-selector',
-      'status.phase=Running',
-      '-o',
-      'jsonpath={.items[0].metadata.name}',
+      "--field-selector",
+      "status.phase=Running",
+      "-o",
+      "jsonpath={.items[0].metadata.name}",
     ];
 
-    const proc = spawn('kubectl', args, {
-      stdio: ['ignore', 'pipe', 'pipe'],
+    const proc = spawn("kubectl", args, {
+      stdio: ["ignore", "pipe", "pipe"],
     });
 
-    let output = '';
-    proc.stdout?.on('data', (data: Buffer) => {
+    let output = "";
+    proc.stdout?.on("data", (data: Buffer) => {
       output += data.toString();
     });
 
-    proc.stderr?.on('data', (data: Buffer) => {
+    proc.stderr?.on("data", (data: Buffer) => {
       const error = data.toString();
     });
 
-    proc.on('exit', (code) => {
+    proc.on("exit", (code) => {
       if (code === 0 && output.trim()) {
         this.podName = output.trim();
         resolve(this.podName);
       } else {
-        logger.error(`[PortForward] Alternative pod lookup failed (code: ${code}, output: "${output.trim()}")`);
+        logger.error(
+          `[PortForward] Alternative pod lookup failed (code: ${code}, output: "${output.trim()}")`
+        );
         resolve(null);
       }
     });
 
-    proc.on('error', (error) => {
-      logger.error(`[PortForward] Error spawning kubectl for alternative pod lookup:`, error);
+    proc.on("error", (error) => {
+      logger.error(
+        `[PortForward] Error spawning kubectl for alternative pod lookup:`,
+        error
+      );
       logger.error(`[PortForward] Error details:`, {
         message: error.message,
         stack: error.stack,
@@ -254,29 +286,36 @@ export class PortForwardInstance extends EventEmitter {
     const timeout = 2000;
 
     socket.setTimeout(timeout);
-    socket.once('connect', () => {
+    socket.once("connect", () => {
       socket.destroy();
     });
 
-    socket.once('timeout', () => {
-      logger.error(`[PortForward] Health check timeout for ${this.config.id} on localhost:${this.config.localPort}`);
+    socket.once("timeout", () => {
+      logger.error(
+        `[PortForward] Health check timeout for ${this.config.id} on localhost:${this.config.localPort}`
+      );
       socket.destroy();
-      this.handleError('Health check failed: connection timeout');
+      this.handleError("Health check failed: connection timeout");
     });
 
-    socket.once('error', (error) => {
-      logger.error(`[PortForward] Health check error for ${this.config.id} on localhost:${this.config.localPort}:`, error);
+    socket.once("error", (error) => {
+      logger.error(
+        `[PortForward] Health check error for ${this.config.id} on localhost:${this.config.localPort}:`,
+        error
+      );
       socket.destroy();
-      this.handleError('Health check failed: connection refused');
+      this.handleError("Health check failed: connection refused");
     });
 
-    socket.connect(this.config.localPort, 'localhost');
+    socket.connect(this.config.localPort, "localhost");
   }
 
   private handleError(error: string) {
     logger.error(`[PortForward] Handling error for ${this.config.id}:`, error);
-    logger.error(`[PortForward] Current state: ${this.state}, retry count: ${this.retryCount}/${this.maxRetries}`);
-    
+    logger.error(
+      `[PortForward] Current state: ${this.state}, retry count: ${this.retryCount}/${this.maxRetries}`
+    );
+
     this.clearConnectionTimeout();
     this.lastError = error;
 
@@ -285,21 +324,20 @@ export class PortForwardInstance extends EventEmitter {
     }
 
     if (this.retryCount >= this.maxRetries) {
-      logger.error(`[PortForward] Max retries (${this.maxRetries}) reached for ${this.config.id}, marking as FAILED`);
+      logger.error(
+        `[PortForward] Max retries (${this.maxRetries}) reached for ${this.config.id}, marking as FAILED`
+      );
       this.state = PortForwardState.FAILED;
-      this.emit('status-change', { ...this.getStatus(), error });
+      this.emit("status-change", { ...this.getStatus(), error });
       this.stop();
       return;
     }
 
     this.retryCount++;
     this.state = PortForwardState.RECONNECTING;
-    this.emit('status-change', { ...this.getStatus(), error });
+    this.emit("status-change", { ...this.getStatus(), error });
 
-    this.retryDelayMs = Math.min(
-      this.retryDelayMs * 2,
-      this.maxRetryDelayMs
-    );
+    this.retryDelayMs = Math.min(this.retryDelayMs * 2, this.maxRetryDelayMs);
 
     this.reconnectTimeout = setTimeout(() => {
       this.reconnectTimeout = null;
@@ -319,7 +357,7 @@ export class PortForwardInstance extends EventEmitter {
 
   private killProcess() {
     if (this.process) {
-      this.process.kill('SIGTERM');
+      this.process.kill("SIGTERM");
       this.process = null;
     }
   }
@@ -327,7 +365,7 @@ export class PortForwardInstance extends EventEmitter {
   stop() {
     this.state = PortForwardState.STOPPED;
     this.clearConnectionTimeout();
-    
+
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
       this.reconnectTimeout = null;
@@ -339,7 +377,7 @@ export class PortForwardInstance extends EventEmitter {
     }
 
     this.killProcess();
-    this.emit('status-change', this.getStatus());
+    this.emit("status-change", this.getStatus());
   }
 
   private lastError?: string;
@@ -353,18 +391,20 @@ export class PortForwardManager extends EventEmitter {
     this.k8sClient = client;
   }
 
-  async startPortForward(config: Omit<PortForwardConfig, 'id'>): Promise<string> {
+  async startPortForward(
+    config: Omit<PortForwardConfig, "id">
+  ): Promise<string> {
     const id = `${config.cluster}-${config.namespace}-${config.service}-${config.servicePort}-${config.localPort}`;
-    
+
     if (this.forwards.has(id)) {
       logger.error(`[PortForwardManager] Port forward ${id} already exists`);
-      throw new Error('Port forward already exists');
+      throw new Error("Port forward already exists");
     }
 
     const instance = new PortForwardInstance({ ...config, id }, this.k8sClient);
-    
-    instance.on('status-change', (status) => {
-      this.emit('update', status);
+
+    instance.on("status-change", (status) => {
+      this.emit("update", status);
     });
 
     this.forwards.set(id, instance);
@@ -384,7 +424,9 @@ export class PortForwardManager extends EventEmitter {
   }
 
   getActiveForwards(): PortForwardStatus[] {
-    return Array.from(this.forwards.values()).map((instance) => instance.getStatus());
+    return Array.from(this.forwards.values()).map((instance) =>
+      instance.getStatus()
+    );
   }
 
   getForward(id: string): PortForwardInstance | undefined {
@@ -398,4 +440,3 @@ export class PortForwardManager extends EventEmitter {
     this.forwards.clear();
   }
 }
-

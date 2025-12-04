@@ -32,6 +32,7 @@ interface PortForwardStore {
   deleteGroup: (id: string) => void;
   loadConfig: () => Promise<void>;
   saveConfig: () => Promise<void>;
+  resetState: () => Promise<void>;
 }
 
 export const usePortForwardStore = create<PortForwardStore>()((set, get) => ({
@@ -197,6 +198,21 @@ export const usePortForwardStore = create<PortForwardStore>()((set, get) => ({
       await window.electronAPI.saveConfig(config);
     } catch (error) {
       console.error('Failed to save config:', error);
+    }
+  },
+  resetState: async () => {
+    if (!window.electronAPI) return;
+    try {
+      await window.electronAPI.resetConfig();
+      set({
+        configuredNamespaces: {},
+        portOverrides: {},
+        selectedServices: {},
+        groups: [],
+      });
+    } catch (error) {
+      console.error('Failed to reset state:', error);
+      throw error;
     }
   },
 }));

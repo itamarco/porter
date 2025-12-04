@@ -63,3 +63,29 @@ export function saveConfig(config: AppConfig): void {
   }
 }
 
+export function resetConfig(): void {
+  const configPath = getConfigPath();
+  try {
+    if (fs.existsSync(configPath)) {
+      fs.unlinkSync(configPath);
+    }
+  } catch (error) {
+    console.error('Error resetting config:', error);
+    throw error;
+  }
+}
+
+export function exportConfig(): AppConfig {
+  return loadConfig();
+}
+
+export function importConfig(configData: AppConfig): void {
+  const config: AppConfig = {
+    configuredNamespaces: configData.configuredNamespaces || {},
+    portOverrides: configData.portOverrides || {},
+    selectedServices: configData.selectedServices || {},
+    groups: configData.groups || [],
+  };
+  saveConfig(config);
+}
+
