@@ -3,14 +3,6 @@ import { usePortForwardStore } from '../stores/portforwards';
 import { useK8s } from '../hooks/useK8s';
 import { PortForwardState, PortForwardStatus } from '../types/electron';
 
-const stateColors: Record<PortForwardState, string> = {
-  [PortForwardState.CONNECTING]: 'bg-yellow-100 text-yellow-800',
-  [PortForwardState.ACTIVE]: 'bg-green-100 text-green-800',
-  [PortForwardState.RECONNECTING]: 'bg-yellow-100 text-yellow-800',
-  [PortForwardState.FAILED]: 'bg-red-100 text-red-800',
-  [PortForwardState.STOPPED]: 'bg-gray-100 text-gray-800',
-};
-
 const stateLabels: Record<PortForwardState, string> = {
   [PortForwardState.CONNECTING]: 'Connecting',
   [PortForwardState.ACTIVE]: 'Active',

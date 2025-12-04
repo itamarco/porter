@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { usePortForwardStore } from '../stores/portforwards';
 import { useK8s } from '../hooks/useK8s';
-import { ServiceInfo, ServicePortInfo, PortForwardState, PortForwardStatus, ClusterInfo } from '../types/electron';
+import { ServicePortInfo, PortForwardState, PortForwardStatus, ClusterInfo } from '../types/electron';
 
 export function ServiceList() {
   const { clusters, services, selectedServices } = usePortForwardStore();

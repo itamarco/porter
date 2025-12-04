@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { usePortForwardStore } from '../stores/portforwards';
 import { useK8s } from '../hooks/useK8s';
-import { Group, PortForwardState, PortForwardStatus, ClusterInfo } from '../types/electron';
+import { Group, PortForwardState } from '../types/electron';
 import { GroupForm } from './GroupForm';
 
 export function Groups() {
