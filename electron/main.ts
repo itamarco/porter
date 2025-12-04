@@ -47,8 +47,6 @@ let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
   const preloadPath = path.join(__dirname, "preload.js");
-  logger.info("Preload path:", preloadPath);
-  logger.info("Log file location:", logger.getLogPath());
 
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -62,6 +60,12 @@ function createWindow() {
   });
 
   const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;
+
+  mainWindow.webContents.on("console-message", (event, level, message, line, sourceId) => {
+    if (message.includes("Autofill.enable") || message.includes("Autofill.setAddresses")) {
+      event.preventDefault();
+    }
+  });
 
   if (isDev) {
     mainWindow.loadURL("http://localhost:5173");

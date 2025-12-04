@@ -27,11 +27,9 @@ export function setupK8sHandlers(ipcMain: IpcMain, portForwardManager: PortForwa
   });
 
   ipcMain.handle('get-namespaces', async (_event, cluster: string) => {
-    logger.info(`[IPC] get-namespaces called with cluster: ${cluster}`);
     try {
       const client = getClient();
       const namespaces = await getNamespaces(client, cluster);
-      logger.info(`[IPC] get-namespaces succeeded, returning ${namespaces.length} namespaces`);
       return namespaces;
     } catch (error) {
       logger.error(`[IPC] Error getting namespaces for cluster ${cluster}:`, error);
@@ -46,11 +44,9 @@ export function setupK8sHandlers(ipcMain: IpcMain, portForwardManager: PortForwa
   });
 
   ipcMain.handle('get-services', async (_event, cluster: string, namespace: string) => {
-    logger.info(`[IPC] get-services called with cluster: ${cluster}, namespace: ${namespace}`);
     try {
       const client = getClient();
       const services = await getServices(client, cluster, namespace);
-      logger.info(`[IPC] get-services succeeded, returning ${services.length} services`);
       return services;
     } catch (error) {
       logger.error(`[IPC] Error getting services for cluster ${cluster}, namespace ${namespace}:`, error);
@@ -71,10 +67,8 @@ export function setupK8sHandlers(ipcMain: IpcMain, portForwardManager: PortForwa
     servicePort: number;
     localPort: number;
   }) => {
-    logger.info(`[IPC] start-port-forward called with config:`, config);
     try {
       const id = await portForwardManager.startPortForward(config);
-      logger.info(`[IPC] start-port-forward succeeded, returned ID: ${id}`);
       return id;
     } catch (error) {
       logger.error(`[IPC] Error starting port forward:`, error);

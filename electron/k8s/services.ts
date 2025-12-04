@@ -21,16 +21,10 @@ export async function getNamespaces(
 ): Promise<string[]> {
   const originalContext = client.getCurrentContext();
 
-  logger.info(
-    `[getNamespaces] Starting namespace fetch for cluster: ${cluster}`
-  );
-
   try {
     client.setContext(cluster);
-    logger.info(`[getNamespaces] Switched context to: ${cluster}`);
 
     const api = client.getCoreV1Api();
-    logger.info(`[getNamespaces] Calling Kubernetes API to list namespaces...`);
 
     const response = await api.listNamespace();
     const items =
@@ -39,10 +33,6 @@ export async function getNamespaces(
       .map((ns: V1Namespace) => ns.metadata?.name || "")
       .filter((name: string) => Boolean(name));
 
-    logger.info(
-      `[getNamespaces] Successfully fetched ${namespaces.length} namespaces for cluster ${cluster}:`,
-      namespaces
-    );
     return namespaces;
   } catch (error) {
     logger.error(
@@ -56,7 +46,6 @@ export async function getNamespaces(
     throw error;
   } finally {
     client.setContext(originalContext);
-    logger.info(`[getNamespaces] Restored context to: ${originalContext}`);
   }
 }
 
@@ -67,24 +56,14 @@ export async function getServices(
 ): Promise<ServiceInfo[]> {
   const originalContext = client.getCurrentContext();
 
-  logger.info(
-    `[getServices] Starting service fetch for cluster: ${cluster}, namespace: ${namespace}`
-  );
-
   try {
     client.setContext(cluster);
-    logger.info(`[getServices] Switched context to: ${cluster}`);
 
     const api = client.getCoreV1Api();
-    logger.info(
-      `[getServices] Calling Kubernetes API to list services in namespace ${namespace}...`
-    );
 
     const response = await api.listNamespacedService({ namespace } as any);
     const items =
       (response as any).body?.items || (response as any).items || [];
-
-    logger.info(`[getServices] Received ${items.length} services from API`);
 
     const services = items.map((service: V1Service) => ({
       name: service.metadata?.name || "",
@@ -96,15 +75,6 @@ export async function getServices(
         protocol: port.protocol || "TCP",
       })),
     }));
-
-    logger.info(
-      `[getServices] Successfully processed ${services.length} services for cluster ${cluster}, namespace ${namespace}`
-    );
-    services.forEach((service: ServiceInfo) => {
-      logger.info(
-        `[getServices]   - Service: ${service.name}, Ports: ${service.ports.length}`
-      );
-    });
 
     return services;
   } catch (error) {
@@ -119,6 +89,5 @@ export async function getServices(
     throw error;
   } finally {
     client.setContext(originalContext);
-    logger.info(`[getServices] Restored context to: ${originalContext}`);
   }
 }

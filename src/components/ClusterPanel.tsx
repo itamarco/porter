@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { usePortForwardStore } from '../stores/portforwards';
 import { useK8s } from '../hooks/useK8s';
 import { ClusterInfo } from '../types/electron';
@@ -109,13 +109,17 @@ function ClusterPane({
       </button>
 
       {isExpanded && (
-        <div className="px-5 py-4 border-t border-white/10 bg-black/20">
+        <div className="border-t border-white/10 bg-black/20">
           {loadingNamespaces ? (
-            <p className="text-sm text-gray-300">Loading namespaces...</p>
+            <div className="px-5 py-4">
+              <p className="text-sm text-gray-300">Loading namespaces...</p>
+            </div>
           ) : availableNamespaces.length === 0 ? (
-            <p className="text-sm text-gray-300">No namespaces found</p>
+            <div className="px-5 py-4">
+              <p className="text-sm text-gray-300">No namespaces found</p>
+            </div>
           ) : (
-            <div className="flex flex-wrap gap-3">
+            <div className="space-y-2 p-3">
               {availableNamespaces.map((namespace) => (
                 <NamespaceChip
                   key={namespace}
@@ -142,30 +146,16 @@ function NamespaceChip({
   onLoadServices: (cluster: string, namespace: string) => Promise<void>;
 }) {
   const { services, selectedServices, toggleServicePortSelection } = usePortForwardStore();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [loadingServices, setLoadingServices] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const serviceKey = `${cluster}:${namespace}`;
   const serviceList = services[serviceKey] || [];
   const selectedServicePorts = selectedServices[serviceKey] || [];
   const selectedCount = selectedServicePorts.length;
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isDropdownOpen]);
-
-  const handleChipClick = async () => {
-    if (!isDropdownOpen && serviceList.length === 0) {
+  const handleToggle = async () => {
+    if (!isExpanded && serviceList.length === 0) {
       setLoadingServices(true);
       try {
         await onLoadServices(cluster, namespace);
@@ -173,7 +163,7 @@ function NamespaceChip({
         setLoadingServices(false);
       }
     }
-    setIsDropdownOpen(!isDropdownOpen);
+    setIsExpanded(!isExpanded);
   };
 
   const handleServicePortToggle = (serviceName: string, port: number) => {
@@ -181,29 +171,23 @@ function NamespaceChip({
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="glass-card rounded-lg overflow-hidden">
       <button
-        onClick={handleChipClick}
+        onClick={handleToggle}
         disabled={loadingServices}
-        className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold glass-chip ${
-          selectedCount > 0
-            ? 'border-blue-300/40'
-            : ''
-        } ${loadingServices ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-        style={selectedCount > 0 ? {
-          background: 'rgba(59, 130, 246, 0.2)',
-          borderColor: 'rgba(59, 130, 246, 0.35)'
-        } : {}}
+        className={`w-full px-4 py-3 flex items-center justify-between glass-button rounded-t-lg ${
+          loadingServices ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
       >
-        <span className="text-gray-100">{namespace}</span>
-        {selectedCount > 0 && (
-          <span className="ml-2 glass-badge px-2 py-0.5 text-xs font-bold text-gray-100 rounded-full">
-            {selectedCount}
-          </span>
-        )}
-        {loadingServices && (
-          <span className="ml-2">
-            <svg className="animate-spin h-3 w-3 text-gray-300" fill="none" viewBox="0 0 24 24">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-semibold text-gray-100">{namespace}</span>
+          {selectedCount > 0 && (
+            <span className="glass-badge px-2 py-0.5 text-xs font-bold text-gray-100 rounded-full">
+              {selectedCount}
+            </span>
+          )}
+          {loadingServices && (
+            <svg className="animate-spin h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path
                 className="opacity-75"
@@ -211,65 +195,58 @@ function NamespaceChip({
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-          </span>
-        )}
+          )}
+        </div>
+        <svg
+          className={`w-4 h-4 text-gray-300 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
       </button>
 
-      {isDropdownOpen && (
-        <div className="absolute top-full left-0 mt-3 w-96 glass-card rounded-xl z-50 max-h-96 overflow-y-auto">
-          <div className="p-4 border-b border-white/10 sticky top-0 glass rounded-t-xl">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-gray-100">{namespace}</h4>
-              <button
-                onClick={() => setIsDropdownOpen(false)}
-                className="text-gray-400 hover:text-gray-100 glass-button rounded-lg p-1"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="p-3 bg-black/20">
-            {serviceList.length === 0 ? (
-              <p className="text-sm text-gray-300 py-2">No services found</p>
-            ) : (
-              <div className="space-y-3">
-                {serviceList.map((service) => (
-                  <div key={service.name} className="border-b border-white/5 last:border-b-0 pb-3 last:pb-0">
-                    <div className="text-xs font-semibold text-gray-100 mb-2 px-2">{service.name}</div>
-                    <div className="space-y-2">
-                      {service.ports.map((port) => {
-                        const servicePortKey = `${service.name}:${port.port}`;
-                        const isSelected = selectedServicePorts.includes(servicePortKey);
-                        return (
-                          <label
-                            key={`${service.name}-${port.port}`}
-                            className={`flex items-center px-3 py-2 rounded-lg cursor-pointer glass ${isSelected ? 'border-blue-300/40' : 'border-white/10'}`}
-                            style={isSelected ? {
-                              background: 'rgba(59, 130, 246, 0.15)',
-                              borderColor: 'rgba(59, 130, 246, 0.35)'
-                            } : {}}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => handleServicePortToggle(service.name, port.port)}
-                              className="w-4 h-4 rounded border-gray-300 bg-black/50 text-blue-600 focus:ring-blue-400 focus:ring-2"
-                              style={{ accentColor: '#3b82f6' }}
-                            />
-                            <span className="ml-3 text-sm text-gray-100">
-                              {port.name} ({port.port}/{port.protocol})
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
+      {isExpanded && (
+        <div className="px-4 py-3 border-t border-white/10 bg-black/20">
+          {serviceList.length === 0 ? (
+            <p className="text-sm text-gray-300">No services found</p>
+          ) : (
+            <div className="space-y-3">
+              {serviceList.map((service) => (
+                <div key={service.name} className="border-b border-white/5 last:border-b-0 pb-3 last:pb-0">
+                  <div className="text-xs font-semibold text-gray-100 mb-2 px-2">{service.name}</div>
+                  <div className="space-y-2">
+                    {service.ports.map((port) => {
+                      const servicePortKey = `${service.name}:${port.port}`;
+                      const isSelected = selectedServicePorts.includes(servicePortKey);
+                      return (
+                        <label
+                          key={`${service.name}-${port.port}`}
+                          className={`flex items-center px-3 py-2 rounded-lg cursor-pointer glass ${isSelected ? 'border-blue-300/40' : 'border-white/10'}`}
+                          style={isSelected ? {
+                            background: 'rgba(59, 130, 246, 0.15)',
+                            borderColor: 'rgba(59, 130, 246, 0.35)'
+                          } : {}}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleServicePortToggle(service.name, port.port)}
+                            className="w-4 h-4 rounded border-gray-300 bg-black/50 text-blue-600 focus:ring-blue-400 focus:ring-2"
+                            style={{ accentColor: '#3b82f6' }}
+                          />
+                          <span className="ml-3 text-sm text-gray-100">
+                            {port.name} ({port.port}/{port.protocol})
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
