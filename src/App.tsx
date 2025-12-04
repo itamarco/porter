@@ -1,4 +1,5 @@
 import { ClusterPanel } from './components/ClusterPanel';
+import { ServiceList } from './components/ServiceList';
 import { useK8s } from './hooks/useK8s';
 import { usePortForwardStore } from './stores/portforwards';
 
@@ -20,6 +21,7 @@ function App() {
           </div>
         )}
 
+        <ServiceList />
         <ClusterPanel />
       </div>
     </div>

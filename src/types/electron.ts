@@ -45,6 +45,7 @@ export interface PortForwardStatus extends PortForwardConfig {
 export interface AppConfig {
   configuredNamespaces: Record<string, string[]>;
   portOverrides: Record<string, number>;
+  selectedServices: Record<string, string[]>;
 }
 
 export interface ElectronAPI {

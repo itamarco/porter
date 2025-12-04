@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePortForwardStore } from '../stores/portforwards';
 import { useK8s } from '../hooks/useK8s';
-import { ServiceInfo, ServicePortInfo, PortForwardState, PortForwardStatus, ClusterInfo } from '../types/electron';
+import { ClusterInfo } from '../types/electron';
 
 export function ClusterPanel() {
-  const { clusters, configuredNamespaces, services } = usePortForwardStore();
+  const { clusters } = usePortForwardStore();
   const { loadServices, loadNamespaces, refreshActiveForwards } = useK8s();
   const [expandedClusters, setExpandedClusters] = useState<Record<string, boolean>>({});
   const [clusterNamespaces, setClusterNamespaces] = useState<Record<string, string[]>>({});
@@ -22,26 +22,9 @@ export function ClusterPanel() {
     }));
   };
 
-  const handleAddNamespace = async (cluster: string, namespace: string) => {
-    const { addNamespace } = usePortForwardStore.getState();
-    if (!configuredNamespaces[cluster]?.includes(namespace)) {
-      addNamespace(cluster, namespace);
-      await loadServices(cluster, namespace);
-    }
-  };
-
-  const handleRemoveNamespace = (cluster: string, namespace: string) => {
-    const { removeNamespace } = usePortForwardStore.getState();
-    removeNamespace(cluster, namespace);
-  };
-
-  const handleRefreshServices = async (cluster: string, namespace: string) => {
-    await loadServices(cluster, namespace);
-  };
-
   return (
     <div className="mb-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Clusters</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">Namespaces</h2>
       {clusters.length === 0 ? (
         <p className="text-gray-500 text-sm">No clusters found</p>
       ) : (
@@ -52,12 +35,7 @@ export function ClusterPanel() {
               cluster={cluster}
               isExpanded={expandedClusters[cluster.context] || false}
               onToggle={() => toggleCluster(cluster.context)}
-              configuredNamespaces={configuredNamespaces[cluster.context] || []}
               availableNamespaces={clusterNamespaces[cluster.context] || []}
-              services={services}
-              onAddNamespace={(ns) => handleAddNamespace(cluster.context, ns)}
-              onRemoveNamespace={(ns) => handleRemoveNamespace(cluster.context, ns)}
-              onRefreshServices={(ns) => handleRefreshServices(cluster.context, ns)}
               onLoadNamespaces={async () => {
                 const namespaces = await loadNamespaces(cluster.context);
                 setClusterNamespaces((prev) => ({
@@ -65,6 +43,7 @@ export function ClusterPanel() {
                   [cluster.context]: namespaces,
                 }));
               }}
+              onLoadServices={loadServices}
             />
           ))}
         </div>
@@ -77,24 +56,16 @@ function ClusterPane({
   cluster,
   isExpanded,
   onToggle,
-  configuredNamespaces,
   availableNamespaces,
-  services,
-  onAddNamespace,
-  onRemoveNamespace,
-  onRefreshServices,
   onLoadNamespaces,
+  onLoadServices,
 }: {
   cluster: { name: string; context: string };
   isExpanded: boolean;
   onToggle: () => void;
-  configuredNamespaces: string[];
   availableNamespaces: string[];
-  services: Record<string, ServiceInfo[]>;
-  onAddNamespace: (namespace: string) => void;
-  onRemoveNamespace: (namespace: string) => void;
-  onRefreshServices: (namespace: string) => void;
   onLoadNamespaces: () => Promise<void>;
+  onLoadServices: (cluster: string, namespace: string) => Promise<void>;
 }) {
   const [loadingNamespaces, setLoadingNamespaces] = useState(false);
 
@@ -121,9 +92,9 @@ function ClusterPane({
       >
         <div className="flex items-center gap-3">
           <span className="font-medium text-gray-900">{cluster.name}</span>
-          {configuredNamespaces.length > 0 && (
+          {availableNamespaces.length > 0 && (
             <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-              {configuredNamespaces.length} namespace{configuredNamespaces.length !== 1 ? 's' : ''}
+              {availableNamespaces.length} namespace{availableNamespaces.length !== 1 ? 's' : ''}
             </span>
           )}
         </div>
@@ -139,90 +110,20 @@ function ClusterPane({
 
       {isExpanded && (
         <div className="px-4 py-3 border-t border-gray-200">
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Namespaces
-            </label>
-            <select
-              onChange={(e) => {
-                if (e.target.value) {
-                  onAddNamespace(e.target.value);
-                  e.target.value = '';
-                }
-              }}
-              disabled={loadingNamespaces}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-            >
-              <option value="">-- Add namespace --</option>
-              {availableNamespaces.length === 0 && !loadingNamespaces && (
-                <option disabled>Click to load namespaces</option>
-              )}
-              {availableNamespaces
-                .filter((ns) => !configuredNamespaces.includes(ns))
-                .map((ns) => (
-                  <option key={ns} value={ns}>
-                    {ns}
-                  </option>
-                ))}
-            </select>
-            {loadingNamespaces && (
-              <p className="text-xs text-gray-500 mt-1">Loading namespaces...</p>
-            )}
-          </div>
-
-          {configuredNamespaces.length > 0 && (
-            <div className="mb-4">
-              <div className="flex flex-wrap gap-2 mb-3">
-                {configuredNamespaces.map((ns) => (
-                  <span
-                    key={ns}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
-                  >
-                    {ns}
-                    <button
-                      onClick={() => onRemoveNamespace(ns)}
-                      className="ml-2 text-blue-600 hover:text-blue-800"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-
-              <div className="space-y-4">
-                {configuredNamespaces.map((namespace) => {
-                  const serviceKey = `${cluster.context}:${namespace}`;
-                  const serviceList = services[serviceKey] || [];
-
-                  return (
-                    <div key={namespace} className="border border-gray-200 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-md font-medium text-gray-700">{namespace}</h4>
-                        <button
-                          onClick={() => onRefreshServices(namespace)}
-                          className="text-sm text-blue-600 hover:text-blue-800"
-                        >
-                          Refresh
-                        </button>
-                      </div>
-                      {serviceList.length === 0 ? (
-                        <p className="text-gray-500 text-sm">No services found</p>
-                      ) : (
-                        <div className="space-y-2">
-                          {serviceList.map((service) => (
-                            <ServiceCard
-                              key={service.name}
-                              service={service}
-                              cluster={cluster.context}
-                              namespace={namespace}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+          {loadingNamespaces ? (
+            <p className="text-xs text-gray-500">Loading namespaces...</p>
+          ) : availableNamespaces.length === 0 ? (
+            <p className="text-xs text-gray-500">No namespaces found</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {availableNamespaces.map((namespace) => (
+                <NamespaceChip
+                  key={namespace}
+                  cluster={cluster.context}
+                  namespace={namespace}
+                  onLoadServices={onLoadServices}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -231,150 +132,136 @@ function ClusterPane({
   );
 }
 
-function ServiceCard({
-  service,
+function NamespaceChip({
   cluster,
   namespace,
+  onLoadServices,
 }: {
-  service: ServiceInfo;
   cluster: string;
   namespace: string;
+  onLoadServices: (cluster: string, namespace: string) => Promise<void>;
 }) {
-  return (
-    <div className="border border-gray-200 rounded p-3 bg-white">
-      <div className="mb-2">
-        <span className="font-medium text-gray-900">{service.name}</span>
-      </div>
-      <div className="space-y-2">
-        {service.ports.map((port) => (
-          <PortForwardCard
-            key={port.name}
-            port={port}
-            service={service.name}
-            cluster={cluster}
-            namespace={namespace}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
+  const { services, selectedServices, toggleServicePortSelection } = usePortForwardStore();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [loadingServices, setLoadingServices] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-function PortForwardCard({
-  port,
-  service,
-  cluster,
-  namespace,
-}: {
-  port: ServicePortInfo;
-  service: string;
-  cluster: string;
-  namespace: string;
-}) {
-  const { activeForwards, setPortOverride, getPortOverride } = usePortForwardStore();
-  const portOverrideKey = `${cluster}:${namespace}:${service}:${port.port}`;
-  const savedPort = getPortOverride(portOverrideKey);
-  const [localPort, setLocalPort] = useState(
-    savedPort ? savedPort.toString() : port.port.toString()
-  );
-  const [starting, setStarting] = useState(false);
+  const serviceKey = `${cluster}:${namespace}`;
+  const serviceList = services[serviceKey] || [];
+  const selectedServicePorts = selectedServices[serviceKey] || [];
+  const selectedCount = selectedServicePorts.length;
 
-  const handlePortChange = (newPort: string) => {
-    setLocalPort(newPort);
-    const portNum = parseInt(newPort, 10);
-    if (!isNaN(portNum) && portNum > 0) {
-      setPortOverride(portOverrideKey, portNum);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
     }
+  }, [isDropdownOpen]);
+
+  const handleChipClick = async () => {
+    if (!isDropdownOpen && serviceList.length === 0) {
+      setLoadingServices(true);
+      try {
+        await onLoadServices(cluster, namespace);
+      } finally {
+        setLoadingServices(false);
+      }
+    }
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const forwardId = `${cluster}-${namespace}-${service}-${port.port}-${parseInt(localPort, 10)}`;
-  const activeForward = activeForwards.find((f: PortForwardStatus) => f.id === forwardId);
-  const isActive = activeForward && activeForward.state === PortForwardState.ACTIVE;
-
-  const handleStart = async () => {
-    if (!window.electronAPI) {
-      alert('Electron API not available');
-      return;
-    }
-    try {
-      setStarting(true);
-      await window.electronAPI.startPortForward({
-        cluster,
-        namespace,
-        service,
-        servicePort: port.port,
-        localPort: parseInt(localPort, 10),
-      });
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to start port forward');
-    } finally {
-      setStarting(false);
-    }
-  };
-
-  const handleStop = async () => {
-    if (!window.electronAPI || !activeForward) return;
-    try {
-      await window.electronAPI.stopPortForward(activeForward.id);
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to stop port forward');
-    }
-  };
-
-  const handleOpenBrowser = () => {
-    if (window.electronAPI && activeForward) {
-      window.electronAPI.openInBrowser(`http://localhost:${activeForward.localPort}`);
-    }
+  const handleServicePortToggle = (serviceName: string, port: number) => {
+    toggleServicePortSelection(cluster, namespace, serviceName, port);
   };
 
   return (
-    <div className={`flex items-center gap-3 p-2 rounded ${isActive ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
-      <div className="flex-1">
-        <div className="text-sm font-medium text-gray-700">
-          {port.name} ({port.protocol})
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={handleChipClick}
+        disabled={loadingServices}
+        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+          selectedCount > 0
+            ? 'bg-blue-600 text-white hover:bg-blue-700'
+            : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+        } ${loadingServices ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      >
+        {namespace}
+        {selectedCount > 0 && (
+          <span className="ml-2 bg-white text-blue-600 rounded-full px-2 py-0.5 text-xs font-semibold">
+            {selectedCount}
+          </span>
+        )}
+        {loadingServices && (
+          <span className="ml-2">
+            <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          </span>
+        )}
+      </button>
+
+      {isDropdownOpen && (
+        <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+          <div className="p-3 border-b border-gray-200 sticky top-0 bg-white">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-gray-900">{namespace}</h4>
+              <button
+                onClick={() => setIsDropdownOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div className="p-2">
+            {serviceList.length === 0 ? (
+              <p className="text-xs text-gray-500 py-2">No services found</p>
+            ) : (
+              <div className="space-y-2">
+                {serviceList.map((service) => (
+                  <div key={service.name} className="border-b border-gray-100 last:border-b-0 pb-2 last:pb-0">
+                    <div className="text-xs font-semibold text-gray-600 mb-1 px-2">{service.name}</div>
+                    <div className="space-y-1">
+                      {service.ports.map((port) => {
+                        const servicePortKey = `${service.name}:${port.port}`;
+                        const isSelected = selectedServicePorts.includes(servicePortKey);
+                        return (
+                          <label
+                            key={`${service.name}-${port.port}`}
+                            className="flex items-center px-2 py-1.5 hover:bg-gray-50 rounded cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleServicePortToggle(service.name, port.port)}
+                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span className="ml-2 text-sm text-gray-700">
+                              {port.name} ({port.port}/{port.protocol})
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="text-xs text-gray-500">
-          Service: {port.port} → Local: {localPort}
-          {isActive && (
-            <span className="ml-2 text-green-600 font-medium">● Active</span>
-          )}
-        </div>
-      </div>
-      {isActive ? (
-        <div className="flex gap-2">
-          <button
-            onClick={handleOpenBrowser}
-            className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            Open
-          </button>
-          <button
-            onClick={handleStop}
-            className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Stop
-          </button>
-        </div>
-      ) : (
-        <>
-          <input
-            type="number"
-            value={localPort}
-            onChange={(e) => handlePortChange(e.target.value)}
-            className="w-20 px-2 py-1 text-sm border border-gray-300 rounded"
-            placeholder="Local port"
-            min="1"
-            max="65535"
-            disabled={starting}
-          />
-          <button
-            onClick={handleStart}
-            disabled={starting || !localPort}
-            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            {starting ? 'Starting...' : 'Start'}
-          </button>
-        </>
       )}
     </div>
   );

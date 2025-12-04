@@ -5,6 +5,7 @@ import { app } from 'electron';
 export interface AppConfig {
   configuredNamespaces: Record<string, string[]>;
   portOverrides: Record<string, number>;
+  selectedServices: Record<string, string[]>;
 }
 
 const CONFIG_FILE_NAME = 'config.json';
@@ -29,6 +30,7 @@ export function loadConfig(): AppConfig {
   return {
     configuredNamespaces: {},
     portOverrides: {},
+    selectedServices: {},
   };
 }
 
