@@ -1,14 +1,14 @@
-import { useEffect } from 'react';
-import { usePortForwardStore } from '../stores/portforwards';
-import { useK8s } from '../hooks/useK8s';
-import { PortForwardState, PortForwardStatus } from '../types/electron';
+import { useEffect } from "react";
+import { usePortForwardStore } from "../stores/portforwards";
+import { useK8s } from "../hooks/useK8s";
+import { PortForwardState, PortForwardStatus } from "../types/electron";
 
 const stateLabels: Record<PortForwardState, string> = {
-  [PortForwardState.CONNECTING]: 'Connecting',
-  [PortForwardState.ACTIVE]: 'Active',
-  [PortForwardState.RECONNECTING]: 'Reconnecting',
-  [PortForwardState.FAILED]: 'Failed',
-  [PortForwardState.STOPPED]: 'Stopped',
+  [PortForwardState.CONNECTING]: "Connecting",
+  [PortForwardState.ACTIVE]: "Active",
+  [PortForwardState.RECONNECTING]: "Reconnecting",
+  [PortForwardState.FAILED]: "Failed",
+  [PortForwardState.STOPPED]: "Stopped",
 };
 
 export function ActiveForwards() {
@@ -23,17 +23,21 @@ export function ActiveForwards() {
 
   if (activeForwards.length === 0) {
     return (
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold text-gray-100 mb-4">Active Port Forwards</h2>
-        <p className="text-gray-300 text-base">No active port forwards</p>
+      <div className="mt-6">
+        <h2 className="text-xl font-semibold text-gray-100 mb-3">
+          Active Port Forwards
+        </h2>
+        <p className="text-gray-300 text-sm">No active port forwards</p>
       </div>
     );
   }
 
   return (
-    <div className="mt-8">
-      <h2 className="text-2xl font-semibold text-gray-100 mb-4">Active Port Forwards</h2>
-      <div className="space-y-4">
+    <div className="mt-6">
+      <h2 className="text-xl font-semibold text-gray-100 mb-3">
+        Active Port Forwards
+      </h2>
+      <div className="space-y-3">
         {activeForwards.map((forward: PortForwardStatus) => (
           <ForwardCard key={forward.id} forward={forward} />
         ))}
@@ -48,7 +52,9 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
     try {
       await window.electronAPI.stopPortForward(forward.id);
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to stop port forward');
+      alert(
+        error instanceof Error ? error.message : "Failed to stop port forward"
+      );
     }
   };
 
@@ -64,54 +70,59 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
         localPort: forward.localPort,
       });
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to retry port forward');
+      alert(
+        error instanceof Error ? error.message : "Failed to retry port forward"
+      );
     }
   };
 
   const stateBgColors: Record<PortForwardState, string> = {
-    [PortForwardState.CONNECTING]: 'rgba(234, 179, 8, 0.15)',
-    [PortForwardState.ACTIVE]: 'rgba(34, 197, 94, 0.15)',
-    [PortForwardState.RECONNECTING]: 'rgba(234, 179, 8, 0.15)',
-    [PortForwardState.FAILED]: 'rgba(220, 38, 38, 0.15)',
-    [PortForwardState.STOPPED]: 'rgba(156, 163, 175, 0.15)',
+    [PortForwardState.CONNECTING]: "rgba(234, 179, 8, 0.15)",
+    [PortForwardState.ACTIVE]: "rgba(34, 197, 94, 0.15)",
+    [PortForwardState.RECONNECTING]: "rgba(234, 179, 8, 0.15)",
+    [PortForwardState.FAILED]: "rgba(220, 38, 38, 0.15)",
+    [PortForwardState.STOPPED]: "rgba(156, 163, 175, 0.15)",
   };
 
   const stateBorderColors: Record<PortForwardState, string> = {
-    [PortForwardState.CONNECTING]: 'rgba(234, 179, 8, 0.3)',
-    [PortForwardState.ACTIVE]: 'rgba(34, 197, 94, 0.3)',
-    [PortForwardState.RECONNECTING]: 'rgba(234, 179, 8, 0.3)',
-    [PortForwardState.FAILED]: 'rgba(220, 38, 38, 0.3)',
-    [PortForwardState.STOPPED]: 'rgba(156, 163, 175, 0.3)',
+    [PortForwardState.CONNECTING]: "rgba(234, 179, 8, 0.3)",
+    [PortForwardState.ACTIVE]: "rgba(34, 197, 94, 0.3)",
+    [PortForwardState.RECONNECTING]: "rgba(234, 179, 8, 0.3)",
+    [PortForwardState.FAILED]: "rgba(220, 38, 38, 0.3)",
+    [PortForwardState.STOPPED]: "rgba(156, 163, 175, 0.3)",
   };
 
   return (
-    <div className="glass-card rounded-xl p-5" style={{
-      background: stateBgColors[forward.state],
-      borderColor: stateBorderColors[forward.state]
-    }}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <span className="font-semibold text-gray-100">
+    <div
+      className="glass-card rounded-xl p-4"
+      style={{
+        background: stateBgColors[forward.state],
+        borderColor: stateBorderColors[forward.state],
+      }}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2.5">
+          <span className="font-semibold text-sm text-gray-100">
             {forward.service} ({forward.namespace})
           </span>
           <span
-            className="px-3 py-1 text-xs font-semibold rounded-lg glass-badge text-gray-100"
+            className="px-2 py-0.5 text-[10px] font-semibold rounded-lg glass-badge text-gray-100"
             style={{
               background: stateBgColors[forward.state],
-              borderColor: stateBorderColors[forward.state]
+              borderColor: stateBorderColors[forward.state],
             }}
           >
             {stateLabels[forward.state]}
           </span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           {forward.state === PortForwardState.FAILED && (
             <button
               onClick={handleRetry}
-              className="px-4 py-2 text-sm font-semibold glass-button rounded-lg text-gray-100"
+              className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg text-gray-100"
               style={{
-                background: 'rgba(59, 130, 246, 0.25)',
-                borderColor: 'rgba(59, 130, 246, 0.4)'
+                background: "rgba(59, 130, 246, 0.25)",
+                borderColor: "rgba(59, 130, 246, 0.4)",
               }}
             >
               Retry
@@ -120,10 +131,10 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
           {forward.state !== PortForwardState.STOPPED && (
             <button
               onClick={handleStop}
-              className="px-4 py-2 text-sm font-semibold glass-button rounded-lg text-gray-100"
+              className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg text-gray-100"
               style={{
-                background: 'rgba(220, 38, 38, 0.25)',
-                borderColor: 'rgba(220, 38, 38, 0.4)'
+                background: "rgba(220, 38, 38, 0.25)",
+                borderColor: "rgba(220, 38, 38, 0.4)",
               }}
             >
               Stop
@@ -131,12 +142,15 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
           )}
         </div>
       </div>
-      <div className="text-sm text-gray-300">
+      <div className="text-xs text-gray-300">
         <div>
-          {forward.cluster} → localhost:{forward.localPort} (service port: {forward.servicePort})
+          {forward.cluster} → localhost:{forward.localPort} (service port:{" "}
+          {forward.servicePort})
         </div>
         {forward.error && (
-          <div className="mt-2 text-red-200 text-xs font-medium">{forward.error}</div>
+          <div className="mt-2 text-red-200 text-xs font-medium">
+            {forward.error}
+          </div>
         )}
         {forward.retryCount > 0 && (
           <div className="mt-2 text-yellow-200 text-xs">
@@ -152,4 +166,3 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
     </div>
   );
 }
-

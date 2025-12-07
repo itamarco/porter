@@ -58,16 +58,16 @@ export function ClusterPanel() {
   );
 
   return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-bold text-gray-200 mb-6 tracking-wide">
+    <div className="mb-6">
+      <h2 className="text-xl font-bold text-gray-200 mb-4 tracking-wide">
         Namespaces
       </h2>
       {clusters.length === 0 ? (
-        <div className="skeuo-card p-6 text-center">
-          <p className="text-gray-400 text-lg">No clusters found</p>
+        <div className="skeuo-card p-5 text-center">
+          <p className="text-gray-400 text-base">No clusters found</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {clusters.map((cluster: ClusterInfo) => (
             <ClusterPane
               key={cluster.context}

@@ -13,12 +13,12 @@ export function ServicePortList({
   onPortToggle: (serviceName: string, port: number) => void;
 }) {
   return (
-    <div className="pb-4">
-      <div className="text-lg font-bold text-gray-100 mb-2 px-2">
+    <div className="pb-3">
+      <div className="text-base font-bold text-gray-100 mb-1.5 px-2">
         {service.name}
       </div>
-      <div className="pl-3 border-l-2 border-gray-800 ml-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-1">
+      <div className="pl-2.5 border-l-2 border-gray-800 ml-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pl-1">
           {service.ports.map((port) => {
             const servicePortKey = `${service.name}:${port.port}`;
             const isSelected = selectedServicePorts.includes(servicePortKey);

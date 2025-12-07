@@ -163,17 +163,17 @@ export function Groups() {
 
   if (groups.length === 0 && !showForm) {
     return (
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-200 tracking-wide">
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-200 tracking-wide">
             Groups
           </h2>
           <button
             onClick={handleCreateGroup}
-            className="skeuo-btn px-5 py-2.5 text-sm font-bold text-skeuo-accent hover:text-white rounded-xl flex items-center gap-2"
+            className="skeuo-btn px-4 py-2 text-xs font-bold text-skeuo-accent hover:text-white rounded-xl flex items-center gap-2"
           >
             <svg
-              className="w-4 h-4"
+              className="w-3.5 h-3.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -188,10 +188,10 @@ export function Groups() {
             Create Group
           </button>
         </div>
-        <div className="skeuo-card p-8 text-center shadow-skeuo-inset">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-skeuo-bg shadow-skeuo flex items-center justify-center text-gray-500">
+        <div className="skeuo-card p-6 text-center shadow-skeuo-inset">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-skeuo-bg shadow-skeuo flex items-center justify-center text-gray-500">
             <svg
-              className="w-8 h-8"
+              className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -204,8 +204,8 @@ export function Groups() {
               />
             </svg>
           </div>
-          <p className="text-gray-300 font-medium">No groups created</p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-gray-300 font-medium text-sm">No groups created</p>
+          <p className="text-xs text-gray-500 mt-1.5">
             Create a group to manage multiple services together.
           </p>
         </div>
@@ -217,17 +217,17 @@ export function Groups() {
   }
 
   return (
-    <div className="mb-8">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-200 tracking-wide">
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-gray-200 tracking-wide">
           Groups
         </h2>
         <button
           onClick={handleCreateGroup}
-          className="skeuo-btn px-5 py-2.5 text-sm font-bold text-skeuo-accent hover:text-white rounded-xl flex items-center gap-2"
+          className="skeuo-btn px-4 py-2 text-xs font-bold text-skeuo-accent hover:text-white rounded-xl flex items-center gap-2"
         >
           <svg
-            className="w-4 h-4"
+            className="w-3.5 h-3.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -245,7 +245,7 @@ export function Groups() {
 
       {showForm && <GroupForm group={editingGroup} onClose={handleFormClose} />}
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {groups.map((group) => {
           const groupServicePorts = getGroupServicePorts(group);
           const activeForwardsForGroup = getGroupActiveForwards(group);
@@ -264,20 +264,20 @@ export function Groups() {
               key={group.id}
               className="skeuo-card overflow-hidden transition-all duration-300"
             >
-              <div className="px-6 py-5 flex items-center justify-between">
+              <div className="px-5 py-4 flex items-center justify-between">
                 <button
                   onClick={() => toggleGroup(group.id)}
-                  className={`flex-1 flex items-center gap-4 text-left outline-none group`}
+                  className={`flex-1 flex items-center gap-3 text-left outline-none group`}
                 >
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
                       allActive
                         ? "bg-skeuo-bg shadow-skeuo-active text-green-400"
                         : "bg-skeuo-bg shadow-skeuo text-gray-500"
                     }`}
                   >
                     <svg
-                      className="w-5 h-5"
+                      className="w-4 h-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -291,12 +291,12 @@ export function Groups() {
                     </svg>
                   </div>
                   <div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-bold text-lg text-gray-200 group-hover:text-white transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-base text-gray-200 group-hover:text-white transition-colors">
                         {group.name}
                       </span>
                       {allActive && (
-                        <span className="skeuo-badge px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold text-green-400 bg-green-400/10 border border-green-400/20 shadow-none">
+                        <span className="skeuo-badge px-1.5 py-0.5 text-[9px] uppercase tracking-wider font-bold text-green-400 bg-green-400/10 border border-green-400/20 shadow-none">
                           Active
                         </span>
                       )}
@@ -447,10 +447,10 @@ export function Groups() {
               </div>
 
               {isExpanded && (
-                <div className="px-6 py-5 bg-skeuo-dark shadow-skeuo-inset border-t border-white/5">
-                  <div className="space-y-3">
+                <div className="px-5 py-4 bg-skeuo-dark shadow-skeuo-inset border-t border-white/5">
+                  <div className="space-y-2">
                     {groupServicePorts.length === 0 ? (
-                      <p className="text-sm text-gray-400 italic">
+                      <p className="text-xs text-gray-400 italic">
                         No services in this group
                       </p>
                     ) : (
@@ -497,7 +497,7 @@ export function Groups() {
                           <div
                             key={`${gsp.cluster}-${gsp.namespace}-${gsp.service}-${gsp.port}-${index}`}
                             className={`
-                              flex items-center gap-4 px-4 py-3 rounded-xl transition-all
+                              flex items-center gap-3 px-3 py-2 rounded-xl transition-all
                               ${
                                 isActive
                                   ? "bg-skeuo-bg shadow-skeuo-active border border-green-500/20"
@@ -506,42 +506,46 @@ export function Groups() {
                             `}
                           >
                             <div
-                              className={`w-2 h-2 rounded-full ${
+                              className={`w-1.5 h-1.5 rounded-full ${
                                 isActive
                                   ? "bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]"
                                   : "bg-gray-600"
                               }`}
                             />
-                            <div className="flex-1 flex items-center gap-3 min-w-0">
-                              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            <div className="flex-1 flex items-center gap-2 min-w-0">
+                              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                                 {cluster?.name || gsp.cluster}
                               </span>
-                              <span className="text-xs text-gray-600">/</span>
-                              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                              <span className="text-[10px] text-gray-600">
+                                /
+                              </span>
+                              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                                 {gsp.namespace}
                               </span>
-                              <span className="text-xs text-gray-600">/</span>
+                              <span className="text-[10px] text-gray-600">
+                                /
+                              </span>
                               <span
-                                className={`text-sm font-bold truncate ${
+                                className={`text-xs font-bold truncate ${
                                   isActive ? "text-green-400" : "text-gray-200"
                                 }`}
                               >
                                 {gsp.service}
                               </span>
-                              <span className="text-xs text-gray-400 whitespace-nowrap ml-auto">
+                              <span className="text-[10px] text-gray-400 whitespace-nowrap ml-auto">
                                 {gsp.portInfo.name} ({gsp.port}/
                                 {gsp.portInfo.protocol})
                               </span>
                             </div>
                             {isActive && (
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1.5">
                                 <button
                                   onClick={handleOpenBrowser}
-                                  className="skeuo-btn px-3 py-2 rounded-lg text-xs font-bold text-gray-200 hover:text-white flex items-center gap-1"
+                                  className="skeuo-btn px-2 py-1.5 rounded-lg text-[10px] font-bold text-gray-200 hover:text-white flex items-center gap-1"
                                   title="Open in Browser"
                                 >
                                   <svg
-                                    className="w-4 h-4"
+                                    className="w-3 h-3"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -556,11 +560,11 @@ export function Groups() {
                                 </button>
                                 <button
                                   onClick={handleStop}
-                                  className="skeuo-btn p-2 rounded-lg text-red-400 hover:text-red-300"
+                                  className="skeuo-btn p-1.5 rounded-lg text-red-400 hover:text-red-300"
                                   title="Stop Forwarding"
                                 >
                                   <svg
-                                    className="w-4 h-4"
+                                    className="w-3 h-3"
                                     fill="currentColor"
                                     viewBox="0 0 24 24"
                                   >

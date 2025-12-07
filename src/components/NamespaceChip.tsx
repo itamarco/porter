@@ -42,31 +42,31 @@ export function NamespaceChip({
       <button
         onClick={handleToggle}
         disabled={loadingServices}
-        className={`w-full px-5 py-4 flex items-center justify-between outline-none transition-all ${
+        className={`w-full px-4 py-3 flex items-center justify-between outline-none transition-all ${
           loadingServices
             ? "opacity-60 cursor-not-allowed"
             : "hover:bg-skeuo-light/20"
         }`}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <div
-            className={`w-2 h-2 rounded-full ${
+            className={`w-1.5 h-1.5 rounded-full ${
               selectedCount > 0
                 ? "bg-skeuo-accent shadow-[0_0_8px_rgba(109,93,252,0.6)]"
                 : "bg-gray-600"
             }`}
           />
-          <span className="text-base font-semibold text-gray-200">
+          <span className="text-sm font-semibold text-gray-200">
             {namespace}
           </span>
           {selectedCount > 0 && (
-            <span className="skeuo-badge px-2.5 py-0.5 text-xs font-bold text-skeuo-accent shadow-skeuo-inset-sm">
+            <span className="skeuo-badge px-2 py-0.5 text-[10px] font-bold text-skeuo-accent shadow-skeuo-inset-sm">
               {selectedCount}
             </span>
           )}
           {loadingServices && (
             <svg
-              className="animate-spin h-4 w-4 text-skeuo-accent ml-2"
+              className="animate-spin h-3.5 w-3.5 text-skeuo-accent ml-1.5"
               fill="none"
               viewBox="0 0 24 24"
             >
@@ -87,7 +87,7 @@ export function NamespaceChip({
           )}
         </div>
         <svg
-          className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${
+          className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-300 ${
             isExpanded ? "rotate-180" : ""
           }`}
           fill="none"
@@ -104,11 +104,11 @@ export function NamespaceChip({
       </button>
 
       {isExpanded && (
-        <div className="px-5 py-4 bg-skeuo-dark shadow-skeuo-inset border-t border-white/5">
+        <div className="px-4 py-3 bg-skeuo-dark shadow-skeuo-inset border-t border-white/5">
           {serviceList.length === 0 ? (
-            <p className="text-sm text-gray-400 italic">No services found</p>
+            <p className="text-xs text-gray-400 italic">No services found</p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {serviceList.map((service) => (
                 <ServicePortList
                   key={service.name}
