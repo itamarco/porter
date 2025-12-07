@@ -32,40 +32,62 @@ export function useK8s() {
 
       const namespacesToLoad: Record<string, Set<string>> = {};
 
-      for (const cluster of clusters) {
-        namespacesToLoad[cluster.context] = new Set<string>();
+      Object.keys(configuredNamespaces).forEach((clusterContext) => {
+        if (!namespacesToLoad[clusterContext]) {
+          namespacesToLoad[clusterContext] = new Set<string>();
+        }
+        const configuredNs = configuredNamespaces[clusterContext] || [];
+        configuredNs.forEach((ns) => namespacesToLoad[clusterContext].add(ns));
+      });
 
-        const configuredNs = configuredNamespaces[cluster.context] || [];
-        configuredNs.forEach((ns) => namespacesToLoad[cluster.context].add(ns));
+      Object.keys(selectedServices).forEach((key) => {
+        const [clusterContext, namespace] = key.split(":");
+        if (clusterContext && namespace) {
+          if (!namespacesToLoad[clusterContext]) {
+            namespacesToLoad[clusterContext] = new Set<string>();
+          }
+          namespacesToLoad[clusterContext].add(namespace);
+        }
+      });
 
-        Object.keys(selectedServices).forEach((key) => {
-          if (key.startsWith(`${cluster.context}:`)) {
-            const [, namespace] = key.split(":");
-            if (namespace) {
-              namespacesToLoad[cluster.context].add(namespace);
+      (groups || []).forEach((group) => {
+        group.servicePorts.forEach((servicePortKey) => {
+          const parts = servicePortKey.split(":");
+          if (parts.length === 4) {
+            const clusterContext = parts[0];
+            const namespace = parts[1];
+            if (clusterContext && namespace) {
+              if (!namespacesToLoad[clusterContext]) {
+                namespacesToLoad[clusterContext] = new Set<string>();
+              }
+              namespacesToLoad[clusterContext].add(namespace);
             }
           }
         });
+      });
 
-        (groups || []).forEach((group) => {
-          group.servicePorts.forEach((servicePortKey) => {
-            const parts = servicePortKey.split(":");
-            if (parts.length === 4 && parts[0] === cluster.context) {
-              const namespace = parts[1];
-              if (namespace) {
-                namespacesToLoad[cluster.context].add(namespace);
-              }
+      const clusterContexts = new Set([
+        ...clusters.map((c) => c.context),
+        ...Object.keys(namespacesToLoad),
+      ]);
+
+      for (const clusterContext of clusterContexts) {
+        const namespaces = Array.from(namespacesToLoad[clusterContext] || []);
+        if (namespaces.length > 0) {
+          for (const namespace of namespaces) {
+            try {
+              await loadServices(clusterContext, namespace);
+            } catch (error) {
+              console.error(
+                `Failed to load services for ${clusterContext}:${namespace}:`,
+                error
+              );
             }
-          });
-        });
-      }
-
-      for (const cluster of clusters) {
-        const namespaces = Array.from(namespacesToLoad[cluster.context] || []);
-        for (const namespace of namespaces) {
-          await loadServices(cluster.context, namespace);
+          }
         }
       }
+
+      await refreshActiveForwards();
     };
 
     initialize();

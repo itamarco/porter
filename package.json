@@ -8,6 +8,8 @@
     "dev:vite": "vite",
     "dev:electron": "wait-on http://localhost:5173 && npm run build:electron && NODE_ENV=development electron .",
     "build": "tsc && vite build && npm run prepare:gke-plugin && electron-builder",
+    "build:arm64": "tsc && vite build && npm run prepare:gke-plugin && electron-builder --mac --arm64",
+    "build:x64": "tsc && vite build && npm run prepare:gke-plugin && electron-builder --mac --x64",
     "build:electron": "tsc -p electron/tsconfig.json",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
