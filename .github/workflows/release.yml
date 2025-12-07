@@ -22,10 +22,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Clean up any existing volumes
+        run: |
+          # Unmount any existing Porter volumes
+          for volume in /Volumes/Porter-*; do
+            if [ -d "$volume" ]; then
+              hdiutil detach "$volume" 2>/dev/null || true
+            fi
+          done
+          # Clean up any temporary DMG files
+          rm -f /tmp/*.dmg 2>/dev/null || true
+
       - name: Build application
-        run: npm run build
+        run: npm run build:ci
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI: true
+        continue-on-error: false
 
       - name: Get version from tag
         id: version

@@ -1,0 +1,35 @@
+name: Test Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify build artifacts
+        run: |
+          echo "Checking build artifacts..."
+          ls -la dist-electron/ || echo "ERROR: dist-electron directory not found"
+          test -f dist-electron/main.js && echo "✓ dist-electron/main.js exists" || echo "ERROR: dist-electron/main.js not found"
+          test -d dist && echo "✓ dist directory exists" || echo "ERROR: dist directory not found"
+          test -d release && echo "✓ release directory exists" || echo "ERROR: release directory not found"
+          ls -la release/ || echo "No release files found"
