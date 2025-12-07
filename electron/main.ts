@@ -199,6 +199,17 @@ function createMenu() {
 function createWindow() {
   const preloadPath = path.join(__dirname, "preload.js");
 
+  let iconPath: string | undefined;
+  if (process.platform === "darwin") {
+    iconPath = app.isPackaged
+      ? path.join(process.resourcesPath, "..", "icon.icns")
+      : path.join(__dirname, "..", "assets", "icon.icns");
+  } else {
+    iconPath = app.isPackaged
+      ? path.join(process.resourcesPath, "assets", "icon.png")
+      : path.join(__dirname, "..", "assets", "icon.png");
+  }
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -208,6 +219,7 @@ function createWindow() {
       nodeIntegration: false,
     },
     titleBarStyle: "hiddenInset",
+    icon: iconPath && fs.existsSync(iconPath) ? iconPath : undefined,
   });
 
   const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;

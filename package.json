@@ -14,7 +14,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "prepare:gke-plugin": "node scripts/fetch-gke-plugin.js"
+    "prepare:gke-plugin": "node scripts/fetch-gke-plugin.js",
+    "generate-icon": "./scripts/generate-icon.sh"
   },
   "keywords": [
     "kubernetes",

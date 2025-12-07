@@ -23,6 +23,7 @@
   },
   "mac": {
     "category": "public.app-category.developer-tools",
+    "icon": "assets/icon.icns",
     "target": [
       {
         "target": "dmg",
@@ -31,7 +32,8 @@
     ]
   },
   "dmg": {
-    "title": "${productName}-${version}"
+    "title": "${productName}-${version}",
+    "background": null,
+    "backgroundColor": "#ffffff"
   }
 }
-
