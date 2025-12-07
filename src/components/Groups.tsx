@@ -469,6 +469,30 @@ export function Groups() {
                           (c) => c.context === gsp.cluster
                         );
 
+                        const handleOpenBrowser = () => {
+                          if (window.electronAPI && forward) {
+                            window.electronAPI.openInBrowser(
+                              `http://localhost:${forward.localPort}`
+                            );
+                          }
+                        };
+
+                        const handleStop = async () => {
+                          if (!window.electronAPI || !forward) return;
+                          try {
+                            await window.electronAPI.stopPortForward(
+                              forward.id
+                            );
+                            await refreshActiveForwards();
+                          } catch (error) {
+                            alert(
+                              error instanceof Error
+                                ? error.message
+                                : "Failed to stop port forward"
+                            );
+                          }
+                        };
+
                         return (
                           <div
                             key={`${gsp.cluster}-${gsp.namespace}-${gsp.service}-${gsp.port}-${index}`}
@@ -509,6 +533,42 @@ export function Groups() {
                                 {gsp.portInfo.protocol})
                               </span>
                             </div>
+                            {isActive && (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={handleOpenBrowser}
+                                  className="skeuo-btn px-3 py-2 rounded-lg text-xs font-bold text-gray-200 hover:text-white flex items-center gap-1"
+                                  title="Open in Browser"
+                                >
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                    />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={handleStop}
+                                  className="skeuo-btn p-2 rounded-lg text-red-400 hover:text-red-300"
+                                  title="Stop Forwarding"
+                                >
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path d="M6 6h12v12H6z" />
+                                  </svg>
+                                </button>
+                              </div>
+                            )}
                           </div>
                         );
                       })
