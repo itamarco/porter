@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { usePortForwardStore } from "../stores/portforwards";
 import { useK8s } from "../hooks/useK8s";
 import { ClusterInfo } from "../types/electron";
@@ -7,8 +7,15 @@ import { ClusterPane } from "./ClusterPane";
 export function ClusterPanel() {
   const { clusters } = usePortForwardStore();
   const { loadServices, loadNamespaces, refreshActiveForwards } = useK8s();
-  const [expandedClusters, setExpandedClusters] = useState<Record<string, boolean>>({});
-  const [clusterNamespaces, setClusterNamespaces] = useState<Record<string, string[]>>({});
+  const [expandedClusters, setExpandedClusters] = useState<
+    Record<string, boolean>
+  >({});
+  const [clusterNamespaces, setClusterNamespaces] = useState<
+    Record<string, string[]>
+  >({});
+  const [failedClusters, setFailedClusters] = useState<Record<string, boolean>>(
+    {}
+  );
 
   useEffect(() => {
     refreshActiveForwards();
@@ -22,6 +29,33 @@ export function ClusterPanel() {
       [cluster]: !prev[cluster],
     }));
   };
+
+  const handleLoadNamespaces = useCallback(
+    async (clusterContext: string) => {
+      try {
+        const namespaces = await loadNamespaces(clusterContext);
+        setClusterNamespaces((prev) => ({
+          ...prev,
+          [clusterContext]: namespaces,
+        }));
+        setFailedClusters((prev) => {
+          const updated = { ...prev };
+          delete updated[clusterContext];
+          return updated;
+        });
+      } catch (error) {
+        setFailedClusters((prev) => ({
+          ...prev,
+          [clusterContext]: true,
+        }));
+        setClusterNamespaces((prev) => ({
+          ...prev,
+          [clusterContext]: [],
+        }));
+      }
+    },
+    [loadNamespaces]
+  );
 
   return (
     <div className="mb-8">
@@ -41,14 +75,9 @@ export function ClusterPanel() {
               isExpanded={expandedClusters[cluster.context] || false}
               onToggle={() => toggleCluster(cluster.context)}
               availableNamespaces={clusterNamespaces[cluster.context] || []}
-              onLoadNamespaces={async () => {
-                const namespaces = await loadNamespaces(cluster.context);
-                setClusterNamespaces((prev) => ({
-                  ...prev,
-                  [cluster.context]: namespaces,
-                }));
-              }}
+              onLoadNamespaces={() => handleLoadNamespaces(cluster.context)}
               onLoadServices={loadServices}
+              hasError={failedClusters[cluster.context] || false}
             />
           ))}
         </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NamespaceChip } from "./NamespaceChip";
 
 export function ClusterPane({
@@ -8,6 +8,7 @@ export function ClusterPane({
   availableNamespaces,
   onLoadNamespaces,
   onLoadServices,
+  hasError,
 }: {
   cluster: { name: string; context: string };
   isExpanded: boolean;
@@ -15,22 +16,41 @@ export function ClusterPane({
   availableNamespaces: string[];
   onLoadNamespaces: () => Promise<void>;
   onLoadServices: (cluster: string, namespace: string) => Promise<void>;
+  hasError?: boolean;
 }) {
   const [loadingNamespaces, setLoadingNamespaces] = useState(false);
+  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
+  const onLoadNamespacesRef = useRef(onLoadNamespaces);
 
   useEffect(() => {
-    if (isExpanded && availableNamespaces.length === 0) {
+    onLoadNamespacesRef.current = onLoadNamespaces;
+  }, [onLoadNamespaces]);
+
+  useEffect(() => {
+    if (
+      isExpanded &&
+      availableNamespaces.length === 0 &&
+      !hasAttemptedLoad &&
+      !hasError
+    ) {
       const loadNamespacesForCluster = async () => {
         setLoadingNamespaces(true);
+        setHasAttemptedLoad(true);
         try {
-          await onLoadNamespaces();
+          await onLoadNamespacesRef.current();
         } finally {
           setLoadingNamespaces(false);
         }
       };
       loadNamespacesForCluster();
     }
-  }, [isExpanded, availableNamespaces.length, onLoadNamespaces]);
+  }, [isExpanded, availableNamespaces.length, hasAttemptedLoad, hasError]);
+
+  useEffect(() => {
+    if (!isExpanded) {
+      setHasAttemptedLoad(false);
+    }
+  }, [isExpanded]);
 
   return (
     <div
@@ -96,6 +116,10 @@ export function ClusterPane({
                   Loading namespaces...
                 </p>
               </div>
+            </div>
+          ) : hasError ? (
+            <div className="px-4 py-6 text-center">
+              <p className="text-sm text-red-400">Failed to load namespaces</p>
             </div>
           ) : availableNamespaces.length === 0 ? (
             <div className="px-4 py-6 text-center">
