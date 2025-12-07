@@ -1,4 +1,4 @@
-# 🚢 Porter
+# <img src="assets/icon.png" width="32" height="32" align="center"/> Porter
 
 > A beautiful macOS app for managing Kubernetes port-forwards with ease
 

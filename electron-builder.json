@@ -35,6 +35,10 @@
     "title": "${productName}-${version}",
     "background": null,
     "backgroundColor": "#ffffff",
-    "format": "UDZO"
+    "format": "UDZO",
+    "window": {
+      "width": 540,
+      "height": 380
+    }
   }
 }
