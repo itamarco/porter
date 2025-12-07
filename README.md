@@ -20,13 +20,36 @@
 ## 📋 Requirements
 
 - 🍎 macOS
-- 📦 Node.js 18+
 - ☸️ kubectl installed and configured
 - 🔑 Valid kubeconfig (`~/.kube/config`)
 
 ---
 
+## 📥 Installation
+
+### Download & Install
+
+1. Download the latest DMG from [Releases](../../releases)
+2. Open the DMG and drag **Porter.app** to your Applications folder
+3. Launch Porter from Applications
+
+### ⚠️ "App is damaged" Error
+
+If macOS shows an error saying Porter is "damaged and should be moved to the trash", this is because the app is not code-signed. This is a security feature of macOS Gatekeeper.
+
+**Fix it by running this command in Terminal:**
+
+```bash
+xattr -cr /Applications/Porter.app
+```
+
+**Alternative:** Right-click Porter.app → **Open** → Click **Open** in the dialog.
+
+---
+
 ## 🛠️ Development
+
+> Requires Node.js 18+
 
 ```bash
 # Install dependencies
