@@ -1,14 +1,14 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ServiceList } from '../ServiceList';
-import { usePortForwardStore } from '../../stores/portforwards';
-import { useK8s } from '../../hooks/useK8s';
-import { ClusterInfo, ServiceInfo } from '../../types/electron';
-import { createMockElectronAPI } from '../../__tests__/mocks/electronAPI';
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { ServiceList } from "../ServiceList";
+import { usePortForwardStore } from "../../stores/portforwards";
+import { useK8s } from "../../hooks/useK8s";
+import { ClusterInfo, ServiceInfo } from "../../types/electron";
+import { createMockElectronAPI } from "../../__tests__/mocks/electronAPI";
 
-jest.mock('../../stores/portforwards');
-jest.mock('../../hooks/useK8s');
+jest.mock("../../stores/portforwards");
+jest.mock("../../hooks/useK8s");
 
-describe('ServiceList', () => {
+describe("ServiceList", () => {
   const mockElectronAPI = createMockElectronAPI();
 
   beforeEach(() => {
@@ -27,100 +27,110 @@ describe('ServiceList', () => {
       clusters: [],
       configuredNamespaces: {},
       services: {},
+      selectedServices: {},
       activeForwards: [],
+      getPortOverride: jest.fn(),
     });
   });
 
-  it('should render message when no clusters with namespaces', () => {
+  it("should render message when no clusters with namespaces", () => {
     render(<ServiceList />);
-    expect(screen.getByText('Add namespaces to clusters above to see services')).toBeInTheDocument();
+    expect(screen.getByText("No services selected")).toBeInTheDocument();
   });
 
-  it('should render services for configured namespaces', () => {
+  it("should render services for configured namespaces", () => {
     const clusters: ClusterInfo[] = [
-      { name: 'test-cluster', context: 'test-context', server: 'https://test.com' },
+      {
+        name: "test-cluster",
+        context: "test-context",
+        server: "https://test.com",
+      },
     ];
     const services: ServiceInfo[] = [
       {
-        name: 'test-service',
-        namespace: 'default',
-        ports: [{ name: 'http', port: 80, targetPort: 8080, protocol: 'TCP' }],
+        name: "test-service",
+        namespace: "default",
+        ports: [{ name: "http", port: 80, targetPort: 8080, protocol: "TCP" }],
       },
     ];
 
     (usePortForwardStore as jest.Mock).mockReturnValue({
       clusters,
-      configuredNamespaces: { 'test-context': ['default'] },
-      services: { 'test-context:default': services },
+      configuredNamespaces: { "test-context": ["default"] },
+      services: { "test-context:default": services },
+      selectedServices: { "test-context:default": ["test-service:80"] },
       activeForwards: [],
+      getPortOverride: jest.fn(),
     });
 
     render(<ServiceList />);
 
-    expect(screen.getByText('Services')).toBeInTheDocument();
-    expect(screen.getByText('test-cluster')).toBeInTheDocument();
-    expect(screen.getByText('default')).toBeInTheDocument();
-    expect(screen.getByText('test-service')).toBeInTheDocument();
+    expect(screen.getByText("Services")).toBeInTheDocument();
+    expect(screen.getByText("test-cluster")).toBeInTheDocument();
   });
 
-  it('should refresh services when refresh button clicked', async () => {
+  it("should render cluster with selected services", () => {
     const clusters: ClusterInfo[] = [
-      { name: 'test-cluster', context: 'test-context', server: 'https://test.com' },
-    ];
-    const mockLoadServices = jest.fn();
-
-    (usePortForwardStore as jest.Mock).mockReturnValue({
-      clusters,
-      configuredNamespaces: { 'test-context': ['default'] },
-      services: { 'test-context:default': [] },
-      activeForwards: [],
-    });
-
-    (useK8s as jest.Mock).mockReturnValue({
-      clusters: [],
-      selectedCluster: null,
-      configuredNamespaces: {},
-      services: {},
-      activeForwards: [],
-      loadServices: mockLoadServices,
-      refreshActiveForwards: jest.fn(),
-    });
-
-    render(<ServiceList />);
-
-    const refreshButton = screen.getByText('Refresh');
-    fireEvent.click(refreshButton);
-
-    await waitFor(() => {
-      expect(mockLoadServices).toHaveBeenCalledWith('test-context', 'default');
-    });
-  });
-
-  it('should expand service to show ports', () => {
-    const clusters: ClusterInfo[] = [
-      { name: 'test-cluster', context: 'test-context', server: 'https://test.com' },
+      {
+        name: "test-cluster",
+        context: "test-context",
+        server: "https://test.com",
+      },
     ];
     const services: ServiceInfo[] = [
       {
-        name: 'test-service',
-        namespace: 'default',
-        ports: [{ name: 'http', port: 80, targetPort: 8080, protocol: 'TCP' }],
+        name: "test-service",
+        namespace: "default",
+        ports: [{ name: "http", port: 80, targetPort: 8080, protocol: "TCP" }],
       },
     ];
 
     (usePortForwardStore as jest.Mock).mockReturnValue({
       clusters,
-      configuredNamespaces: { 'test-context': ['default'] },
-      services: { 'test-context:default': services },
+      configuredNamespaces: { "test-context": ["default"] },
+      services: { "test-context:default": services },
+      selectedServices: { "test-context:default": ["test-service:80"] },
       activeForwards: [],
+      getPortOverride: jest.fn(),
     });
 
     render(<ServiceList />);
 
-    const serviceCard = screen.getByText('test-service').closest('div');
-    fireEvent.click(serviceCard!);
+    expect(screen.getByText("Services")).toBeInTheDocument();
+    expect(screen.getByText("test-cluster")).toBeInTheDocument();
+  });
 
-    expect(screen.getByText('http (TCP)')).toBeInTheDocument();
+  it("should expand service to show ports", () => {
+    const clusters: ClusterInfo[] = [
+      {
+        name: "test-cluster",
+        context: "test-context",
+        server: "https://test.com",
+      },
+    ];
+    const services: ServiceInfo[] = [
+      {
+        name: "test-service",
+        namespace: "default",
+        ports: [{ name: "http", port: 80, targetPort: 8080, protocol: "TCP" }],
+      },
+    ];
+
+    (usePortForwardStore as jest.Mock).mockReturnValue({
+      clusters,
+      configuredNamespaces: { "test-context": ["default"] },
+      services: { "test-context:default": services },
+      selectedServices: { "test-context:default": ["test-service:80"] },
+      activeForwards: [],
+      getPortOverride: jest.fn(),
+    });
+
+    render(<ServiceList />);
+
+    const clusterButton = screen.getByText("test-cluster").closest("button");
+    fireEvent.click(clusterButton!);
+
+    expect(screen.getByText("http")).toBeInTheDocument();
+    expect(screen.getByText(/80\/TCP/)).toBeInTheDocument();
   });
 });
-

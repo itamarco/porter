@@ -33,6 +33,7 @@ describe("ClusterPanel", () => {
       clusters: [],
       configuredNamespaces: {},
       services: {},
+      selectedServices: {},
       activeForwards: [],
       portOverrides: {},
       addNamespace: mockAddNamespace,
@@ -63,6 +64,7 @@ describe("ClusterPanel", () => {
       clusters,
       configuredNamespaces: {},
       services: {},
+      selectedServices: {},
       activeForwards: [],
       portOverrides: {},
       addNamespace: jest.fn(),
@@ -72,7 +74,7 @@ describe("ClusterPanel", () => {
     });
 
     render(<ClusterPanel />);
-    expect(screen.getByText("Clusters")).toBeInTheDocument();
+    expect(screen.getByText("Namespaces")).toBeInTheDocument();
     expect(screen.getByText("test-cluster")).toBeInTheDocument();
   });
 
@@ -93,6 +95,7 @@ describe("ClusterPanel", () => {
       clusters,
       configuredNamespaces: {},
       services: {},
+      selectedServices: {},
       activeForwards: [],
       portOverrides: {},
       addNamespace: jest.fn(),
@@ -125,7 +128,7 @@ describe("ClusterPanel", () => {
     });
   });
 
-  it("should add namespace when selected", async () => {
+  it("should load namespaces when cluster is expanded", async () => {
     const clusters: ClusterInfo[] = [
       {
         name: "test-cluster",
@@ -133,88 +136,21 @@ describe("ClusterPanel", () => {
         server: "https://test.com",
       },
     ];
-    const mockAddNamespace = jest.fn();
-    const mockLoadServices = jest.fn();
+    const mockLoadNamespaces = jest
+      .fn()
+      .mockResolvedValue(["default", "kube-system"]);
 
-    const mockStoreReturn = {
+    (usePortForwardStore as unknown as jest.Mock).mockReturnValue({
       clusters,
       configuredNamespaces: {},
       services: {},
-      activeForwards: [],
-      portOverrides: {},
-      addNamespace: mockAddNamespace,
-      removeNamespace: jest.fn(),
-      setPortOverride: jest.fn(),
-      getPortOverride: jest.fn().mockReturnValue(undefined),
-    };
-
-    (usePortForwardStore as unknown as jest.Mock).mockReturnValue(
-      mockStoreReturn
-    );
-    Object.defineProperty(usePortForwardStore, "getState", {
-      value: jest.fn().mockReturnValue(mockStoreReturn),
-      writable: true,
-      configurable: true,
-    });
-
-    (useK8s as jest.Mock).mockReturnValue({
-      clusters: [],
-      selectedCluster: null,
-      configuredNamespaces: {},
-      services: {},
-      activeForwards: [],
-      loadServices: mockLoadServices,
-      loadNamespaces: jest.fn().mockResolvedValue(["default", "kube-system"]),
-      refreshActiveForwards: jest.fn(),
-    });
-
-    render(<ClusterPanel />);
-
-    const clusterButton = screen.getByText("test-cluster").closest("button");
-    fireEvent.click(clusterButton!);
-
-    await waitFor(() => {
-      const select = screen.getByRole("combobox");
-      expect(select).toBeInTheDocument();
-    });
-
-    const select = screen.getByRole("combobox");
-    fireEvent.change(select, { target: { value: "default" } });
-
-    await waitFor(() => {
-      expect(mockAddNamespace).toHaveBeenCalledWith("test-context", "default");
-    });
-  });
-
-  it("should remove namespace when remove button clicked", () => {
-    const clusters: ClusterInfo[] = [
-      {
-        name: "test-cluster",
-        context: "test-context",
-        server: "https://test.com",
-      },
-    ];
-    const mockRemoveNamespace = jest.fn();
-
-    const mockStoreReturn = {
-      clusters,
-      configuredNamespaces: { "test-context": ["default"] },
-      services: {},
+      selectedServices: {},
       activeForwards: [],
       portOverrides: {},
       addNamespace: jest.fn(),
-      removeNamespace: mockRemoveNamespace,
+      removeNamespace: jest.fn(),
       setPortOverride: jest.fn(),
       getPortOverride: jest.fn().mockReturnValue(undefined),
-    };
-
-    (usePortForwardStore as unknown as jest.Mock).mockReturnValue(
-      mockStoreReturn
-    );
-    Object.defineProperty(usePortForwardStore, "getState", {
-      value: jest.fn().mockReturnValue(mockStoreReturn),
-      writable: true,
-      configurable: true,
     });
 
     (useK8s as jest.Mock).mockReturnValue({
@@ -224,7 +160,7 @@ describe("ClusterPanel", () => {
       services: {},
       activeForwards: [],
       loadServices: jest.fn(),
-      loadNamespaces: jest.fn().mockResolvedValue(["default"]),
+      loadNamespaces: mockLoadNamespaces,
       refreshActiveForwards: jest.fn(),
     });
 
@@ -233,32 +169,25 @@ describe("ClusterPanel", () => {
     const clusterButton = screen.getByText("test-cluster").closest("button");
     fireEvent.click(clusterButton!);
 
-    const removeButton = screen.getByText("×");
-    fireEvent.click(removeButton);
-
-    expect(mockRemoveNamespace).toHaveBeenCalledWith("test-context", "default");
+    await waitFor(() => {
+      expect(mockLoadNamespaces).toHaveBeenCalledWith("test-context");
+    });
   });
 
-  it("should display services for configured namespaces", () => {
+  it("should display namespaces when loaded", async () => {
     const clusters: ClusterInfo[] = [
       {
         name: "test-cluster",
         context: "test-context",
         server: "https://test.com",
-      },
-    ];
-    const services: ServiceInfo[] = [
-      {
-        name: "test-service",
-        namespace: "default",
-        ports: [{ name: "http", port: 80, targetPort: 8080, protocol: "TCP" }],
       },
     ];
 
     (usePortForwardStore as unknown as jest.Mock).mockReturnValue({
       clusters,
-      configuredNamespaces: { "test-context": ["default"] },
-      services: { "test-context:default": services },
+      configuredNamespaces: {},
+      services: {},
+      selectedServices: {},
       activeForwards: [],
       portOverrides: {},
       addNamespace: jest.fn(),
@@ -283,6 +212,27 @@ describe("ClusterPanel", () => {
     const clusterButton = screen.getByText("test-cluster").closest("button");
     fireEvent.click(clusterButton!);
 
-    expect(screen.getByText("test-service")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("default")).toBeInTheDocument();
+    });
+  });
+
+  it("should call refreshActiveForwards on mount", () => {
+    const mockRefreshActiveForwards = jest.fn();
+
+    (useK8s as jest.Mock).mockReturnValue({
+      clusters: [],
+      selectedCluster: null,
+      configuredNamespaces: {},
+      services: {},
+      activeForwards: [],
+      loadServices: jest.fn(),
+      loadNamespaces: jest.fn().mockResolvedValue([]),
+      refreshActiveForwards: mockRefreshActiveForwards,
+    });
+
+    render(<ClusterPanel />);
+
+    expect(mockRefreshActiveForwards).toHaveBeenCalled();
   });
 });

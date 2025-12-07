@@ -27,12 +27,16 @@ export function useK8s() {
       await loadClusters();
 
       const state = usePortForwardStore.getState();
-      const { configuredNamespaces, clusters, selectedServices, groups } =
-        state;
+      const {
+        configuredNamespaces,
+        clusters,
+        selectedServices = {},
+        groups = [],
+      } = state;
 
       const namespacesToLoad: Record<string, Set<string>> = {};
 
-      Object.keys(configuredNamespaces).forEach((clusterContext) => {
+      Object.keys(configuredNamespaces || {}).forEach((clusterContext) => {
         if (!namespacesToLoad[clusterContext]) {
           namespacesToLoad[clusterContext] = new Set<string>();
         }
@@ -50,7 +54,7 @@ export function useK8s() {
         }
       });
 
-      (groups || []).forEach((group) => {
+      groups.forEach((group) => {
         group.servicePorts.forEach((servicePortKey) => {
           const parts = servicePortKey.split(":");
           if (parts.length === 4) {
