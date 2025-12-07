@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'hotfix') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
+
+      - name: Upload DMG (x64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release/Porter-${{ steps.version.outputs.VERSION }}-x64.dmg
+          asset_name: Porter-${{ steps.version.outputs.VERSION }}-x64.dmg
+          asset_content_type: application/octet-stream
+
+      - name: Upload DMG (arm64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release/Porter-${{ steps.version.outputs.VERSION }}-arm64.dmg
+          asset_name: Porter-${{ steps.version.outputs.VERSION }}-arm64.dmg
+          asset_content_type: application/octet-stream
+
+      - name: Upload DMG (universal)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release/Porter-${{ steps.version.outputs.VERSION }}.dmg
+          asset_name: Porter-${{ steps.version.outputs.VERSION }}.dmg
+          asset_content_type: application/octet-stream
+        continue-on-error: true

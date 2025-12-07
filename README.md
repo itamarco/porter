@@ -2,6 +2,7 @@
 
 > A beautiful macOS app for managing Kubernetes port-forwards with ease
 
+> ⚠️ **First time installing?** See [⚠️ "App is damaged" Error](#️-app-is-damaged-error) if macOS blocks the app
 ---
 
 ## ✨ Features
