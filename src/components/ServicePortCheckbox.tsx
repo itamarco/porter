@@ -10,7 +10,7 @@ export function ServicePortCheckbox({
   return (
     <label
       className={`
-        flex items-center px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
+        flex items-center px-3 py-2 rounded-lg cursor-pointer transition-all duration-200
         ${
           isSelected
             ? "bg-skeuo-bg shadow-skeuo-active border border-skeuo-accent/20"
