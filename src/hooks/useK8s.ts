@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { usePortForwardStore } from '../stores/portforwards';
-import { PortForwardStatus } from '../types/electron';
+import { useEffect } from "react";
+import { usePortForwardStore } from "../stores/portforwards";
+import { PortForwardStatus } from "../types/electron";
 
 export function useK8s() {
   const {
@@ -25,20 +25,51 @@ export function useK8s() {
       setupPortForwardListener();
       await loadConfig();
       await loadClusters();
-      
+
       const state = usePortForwardStore.getState();
-      const { configuredNamespaces, clusters } = state;
-      
+      const { configuredNamespaces, clusters, selectedServices, groups } =
+        state;
+
+      const namespacesToLoad: Record<string, Set<string>> = {};
+
       for (const cluster of clusters) {
-        const namespaces = configuredNamespaces[cluster.context] || [];
+        namespacesToLoad[cluster.context] = new Set<string>();
+
+        const configuredNs = configuredNamespaces[cluster.context] || [];
+        configuredNs.forEach((ns) => namespacesToLoad[cluster.context].add(ns));
+
+        Object.keys(selectedServices).forEach((key) => {
+          if (key.startsWith(`${cluster.context}:`)) {
+            const [, namespace] = key.split(":");
+            if (namespace) {
+              namespacesToLoad[cluster.context].add(namespace);
+            }
+          }
+        });
+
+        (groups || []).forEach((group) => {
+          group.servicePorts.forEach((servicePortKey) => {
+            const parts = servicePortKey.split(":");
+            if (parts.length === 4 && parts[0] === cluster.context) {
+              const namespace = parts[1];
+              if (namespace) {
+                namespacesToLoad[cluster.context].add(namespace);
+              }
+            }
+          });
+        });
+      }
+
+      for (const cluster of clusters) {
+        const namespaces = Array.from(namespacesToLoad[cluster.context] || []);
         for (const namespace of namespaces) {
           await loadServices(cluster.context, namespace);
         }
       }
     };
-    
+
     initialize();
-    
+
     return () => {
       if (window.electronAPI) {
         window.electronAPI.removePortForwardListener();
@@ -63,7 +94,9 @@ export function useK8s() {
 
   const loadClusters = async () => {
     if (!window.electronAPI) {
-      setError('Electron API not available. Make sure you are running in Electron.');
+      setError(
+        "Electron API not available. Make sure you are running in Electron."
+      );
       return;
     }
     try {
@@ -72,7 +105,9 @@ export function useK8s() {
       const clusterList = await window.electronAPI.getClusters();
       setClusters(clusterList);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to load clusters');
+      setError(
+        error instanceof Error ? error.message : "Failed to load clusters"
+      );
     } finally {
       setLoading(false);
     }
@@ -86,7 +121,9 @@ export function useK8s() {
       setNamespaces(namespaceList);
       return namespaceList;
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to load namespaces');
+      setError(
+        error instanceof Error ? error.message : "Failed to load namespaces"
+      );
       return [];
     } finally {
       setLoading(false);
@@ -97,10 +134,15 @@ export function useK8s() {
     if (!window.electronAPI) return;
     try {
       setLoading(true);
-      const serviceList = await window.electronAPI.getServices(cluster, namespace);
+      const serviceList = await window.electronAPI.getServices(
+        cluster,
+        namespace
+      );
       setServices(cluster, namespace, serviceList);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to load services');
+      setError(
+        error instanceof Error ? error.message : "Failed to load services"
+      );
     } finally {
       setLoading(false);
     }
@@ -119,7 +161,11 @@ export function useK8s() {
       const forwards = await window.electronAPI.getActiveForwards();
       setActiveForwards(forwards);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to load active forwards');
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to load active forwards"
+      );
     }
   };
 
@@ -135,4 +181,3 @@ export function useK8s() {
     refreshActiveForwards,
   };
 }
-

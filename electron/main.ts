@@ -8,6 +8,8 @@ import { PortForwardManager } from "./k8s/portforward";
 import { K8sClient } from "./k8s/client";
 import { resetConfig, exportConfig, importConfig } from "./config";
 
+app.setName("Porter");
+
 function fixPath() {
   const homedir = os.homedir();
   const additionalPaths = [
