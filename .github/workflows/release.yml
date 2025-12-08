@@ -32,7 +32,12 @@ jobs:
       - name: Update package.json version
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
-          npm version "$VERSION" --no-git-tag-version
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          if [ "$VERSION" != "$CURRENT_VERSION" ]; then
+            npm version "$VERSION" --no-git-tag-version
+          else
+            echo "Version is already $VERSION, skipping update"
+          fi
 
       - name: Clean up any existing volumes
         run: |
