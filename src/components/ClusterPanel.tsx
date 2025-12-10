@@ -60,7 +60,7 @@ export function ClusterPanel() {
   return (
     <div className="mb-6">
       <h2 className="text-xl font-bold text-gray-200 mb-4 tracking-wide">
-        Namespaces
+        Services Discovery
       </h2>
       {clusters.length === 0 ? (
         <div className="skeuo-card p-5 text-center">

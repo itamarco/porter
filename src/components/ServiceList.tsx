@@ -195,7 +195,7 @@ export function ServiceList() {
     return (
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-200 mb-4 tracking-wide">
-          Services
+          Selected Services
         </h2>
         <div className="skeuo-card p-6 text-center shadow-skeuo-inset">
           <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-skeuo-bg shadow-skeuo flex items-center justify-center text-gray-500">
@@ -227,7 +227,7 @@ export function ServiceList() {
   return (
     <div className="mb-6">
       <h2 className="text-xl font-bold text-gray-200 mb-4 tracking-wide">
-        Services
+        Selected Services
       </h2>
       <div className="space-y-4">
         {clustersWithSelectedServices.map((cluster) => {

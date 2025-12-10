@@ -33,3 +33,4 @@ jobs:
           test -d dist && echo "✓ dist directory exists" || echo "ERROR: dist directory not found"
           test -d release && echo "✓ release directory exists" || echo "ERROR: release directory not found"
           ls -la release/ || echo "No release files found"
+
