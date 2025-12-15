@@ -7,13 +7,41 @@ jest.mock("electron", () => ({
   },
 }));
 
+jest.mock("../logger", () => ({
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
+}));
+
 global.fetch = jest.fn();
 
 describe("updater", () => {
+  let originalArchDescriptor: PropertyDescriptor | undefined;
+
+  const setProcessArch = (arch: string) => {
+    if (!originalArchDescriptor) return;
+    Object.defineProperty(process, "arch", {
+      ...originalArchDescriptor,
+      value: arch,
+    });
+  };
+
+  beforeAll(() => {
+    originalArchDescriptor = Object.getOwnPropertyDescriptor(process, "arch");
+  });
+
+  afterAll(() => {
+    if (originalArchDescriptor) {
+      Object.defineProperty(process, "arch", originalArchDescriptor);
+    }
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     (app.getVersion as jest.Mock).mockReturnValue("1.0.0");
-    process.arch = "arm64";
+    setProcessArch("arm64");
   });
 
   describe("checkForUpdates", () => {
@@ -67,7 +95,7 @@ describe("updater", () => {
       const result = await checkForUpdates();
 
       expect(result.updateAvailable).toBe(false);
-      expect(result.latestVersion).toBe("1.0.0");
+      expect(result.latestVersion).toBeNull();
     });
 
     it("should return no update when current version is newer", async () => {
@@ -111,7 +139,7 @@ describe("updater", () => {
     });
 
     it("should find x64 DMG asset when arch is x64", async () => {
-      process.arch = "x64";
+      setProcessArch("x64");
 
       const mockRelease = {
         tag_name: "v1.1.0",

@@ -15,6 +15,7 @@ export function Groups() {
   );
   const [startingAll, setStartingAll] = useState<Record<string, boolean>>({});
   const [stoppingAll, setStoppingAll] = useState<Record<string, boolean>>({});
+  const [startingOne, setStartingOne] = useState<Record<string, boolean>>({});
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups((prev) => ({
@@ -158,6 +159,43 @@ export function Groups() {
       );
     } finally {
       setStoppingAll((prev) => ({ ...prev, [group.id]: false }));
+    }
+  };
+
+  const handleStartOne = async (params: {
+    groupId: string;
+    cluster: string;
+    namespace: string;
+    service: string;
+    servicePort: number;
+  }) => {
+    if (!window.electronAPI) {
+      alert("Electron API not available");
+      return;
+    }
+
+    const startKey = `${params.groupId}:${params.cluster}:${params.namespace}:${params.service}:${params.servicePort}`;
+    setStartingOne((prev) => ({ ...prev, [startKey]: true }));
+    try {
+      const { getPortOverride } = usePortForwardStore.getState();
+      const portOverrideKey = `${params.cluster}:${params.namespace}:${params.service}:${params.servicePort}`;
+      const localPort = getPortOverride(portOverrideKey) || params.servicePort;
+
+      await window.electronAPI.startPortForward({
+        cluster: params.cluster,
+        namespace: params.namespace,
+        service: params.service,
+        servicePort: params.servicePort,
+        localPort,
+      });
+
+      await refreshActiveForwards();
+    } catch (error) {
+      alert(
+        error instanceof Error ? error.message : "Failed to start port forward"
+      );
+    } finally {
+      setStartingOne((prev) => ({ ...prev, [startKey]: false }));
     }
   };
 
@@ -468,6 +506,8 @@ export function Groups() {
                         const cluster = clusters.find(
                           (c) => c.context === gsp.cluster
                         );
+                        const startKey = `${group.id}:${gsp.cluster}:${gsp.namespace}:${gsp.service}:${gsp.port}`;
+                        const isStartingOne = startingOne[startKey] || false;
 
                         const handleOpenBrowser = () => {
                           if (window.electronAPI && forward) {
@@ -475,6 +515,16 @@ export function Groups() {
                               `http://localhost:${forward.localPort}`
                             );
                           }
+                        };
+
+                        const handleStart = async () => {
+                          await handleStartOne({
+                            groupId: group.id,
+                            cluster: gsp.cluster,
+                            namespace: gsp.namespace,
+                            service: gsp.service,
+                            servicePort: gsp.port,
+                          });
                         };
 
                         const handleStop = async () => {
@@ -537,42 +587,95 @@ export function Groups() {
                                 {gsp.portInfo.protocol})
                               </span>
                             </div>
-                            {isActive && (
-                              <div className="flex items-center gap-1.5">
-                                <button
-                                  onClick={handleOpenBrowser}
-                                  className="skeuo-btn px-2 py-1.5 rounded-lg text-[10px] font-bold text-gray-200 hover:text-white flex items-center gap-1"
-                                  title="Open in Browser"
-                                >
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={handleStart}
+                                disabled={
+                                  isActive ||
+                                  isStartingOne ||
+                                  isStarting ||
+                                  isStopping
+                                }
+                                className={`
+                                  skeuo-btn p-1.5 rounded-lg
+                                  ${
+                                    isActive ||
+                                    isStartingOne ||
+                                    isStarting ||
+                                    isStopping
+                                      ? "text-gray-600 bg-skeuo-bg shadow-none cursor-not-allowed opacity-50"
+                                      : "text-green-400 hover:text-green-300"
+                                  }
+                                `}
+                                title={isActive ? "Already Active" : "Start"}
+                              >
+                                {isStartingOne ? (
                                   <svg
-                                    className="w-3 h-3"
+                                    className="animate-spin w-3 h-3"
                                     fill="none"
-                                    stroke="currentColor"
                                     viewBox="0 0 24 24"
                                   >
+                                    <circle
+                                      className="opacity-25"
+                                      cx="12"
+                                      cy="12"
+                                      r="10"
+                                      stroke="currentColor"
+                                      strokeWidth="4"
+                                    />
                                     <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                      className="opacity-75"
+                                      fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                     />
                                   </svg>
-                                </button>
-                                <button
-                                  onClick={handleStop}
-                                  className="skeuo-btn p-1.5 rounded-lg text-red-400 hover:text-red-300"
-                                  title="Stop Forwarding"
-                                >
+                                ) : (
                                   <svg
                                     className="w-3 h-3"
                                     fill="currentColor"
                                     viewBox="0 0 24 24"
                                   >
-                                    <path d="M6 6h12v12H6z" />
+                                    <path d="M8 5v14l11-7z" />
                                   </svg>
-                                </button>
-                              </div>
-                            )}
+                                )}
+                              </button>
+                              {isActive && (
+                                <>
+                                  <button
+                                    onClick={handleOpenBrowser}
+                                    className="skeuo-btn px-2 py-1.5 rounded-lg text-[10px] font-bold text-gray-200 hover:text-white flex items-center gap-1"
+                                    title="Open in Browser"
+                                  >
+                                    <svg
+                                      className="w-3 h-3"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                      />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={handleStop}
+                                    className="skeuo-btn p-1.5 rounded-lg text-red-400 hover:text-red-300"
+                                    title="Stop Forwarding"
+                                  >
+                                    <svg
+                                      className="w-3 h-3"
+                                      fill="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path d="M6 6h12v12H6z" />
+                                    </svg>
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </div>
                         );
                       })

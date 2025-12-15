@@ -34,3 +34,4 @@ jobs:
           test -d release && echo "✓ release directory exists" || echo "ERROR: release directory not found"
           ls -la release/ || echo "No release files found"
 
+
