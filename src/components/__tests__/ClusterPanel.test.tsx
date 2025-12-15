@@ -1,3 +1,5 @@
+import React from "react";
+import "@testing-library/jest-dom";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { ClusterPanel } from "../ClusterPanel";
 import { usePortForwardStore } from "../../stores/portforwards";
@@ -74,7 +76,7 @@ describe("ClusterPanel", () => {
     });
 
     render(<ClusterPanel />);
-    expect(screen.getByText("Namespaces")).toBeInTheDocument();
+    expect(screen.getByText("Services Discovery")).toBeInTheDocument();
     expect(screen.getByText("test-cluster")).toBeInTheDocument();
   });
 

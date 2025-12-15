@@ -65,7 +65,7 @@ describe("ServiceList", () => {
 
     render(<ServiceList />);
 
-    expect(screen.getByText("Services")).toBeInTheDocument();
+    expect(screen.getByText("Selected Services")).toBeInTheDocument();
     expect(screen.getByText("test-cluster")).toBeInTheDocument();
   });
 
@@ -96,7 +96,7 @@ describe("ServiceList", () => {
 
     render(<ServiceList />);
 
-    expect(screen.getByText("Services")).toBeInTheDocument();
+    expect(screen.getByText("Selected Services")).toBeInTheDocument();
     expect(screen.getByText("test-cluster")).toBeInTheDocument();
   });
 

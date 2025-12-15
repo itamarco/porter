@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePortForwardStore } from "../stores/portforwards";
 import { ClusterInfo, ServiceInfo } from "../types/electron";
 
@@ -8,11 +8,28 @@ interface GroupFormProps {
 }
 
 export function GroupForm({ group, onClose }: GroupFormProps) {
-  const { clusters, services, createGroup, updateGroup } =
+  const { clusters, services, selectedServices, createGroup, updateGroup } =
     usePortForwardStore();
   const [name, setName] = useState(group?.name || "");
   const [selectedServicePorts, setSelectedServicePorts] = useState<Set<string>>(
-    new Set(group?.servicePorts || [])
+    () => {
+      if (group?.servicePorts?.length) {
+        return new Set(group.servicePorts);
+      }
+      const initial = new Set<string>();
+      Object.keys(selectedServices || {}).forEach((key) => {
+        const [clusterContext, namespace] = key.split(":");
+        const ports = selectedServices[key] || [];
+        ports.forEach((servicePortKey) => {
+          const [serviceName, portStr] = servicePortKey.split(":");
+          if (!clusterContext || !namespace || !serviceName || !portStr) return;
+          initial.add(
+            `${clusterContext}:${namespace}:${serviceName}:${portStr}`
+          );
+        });
+      });
+      return initial;
+    }
   );
   const [expandedClusters, setExpandedClusters] = useState<
     Record<string, boolean>
@@ -27,6 +44,16 @@ export function GroupForm({ group, onClose }: GroupFormProps) {
       setSelectedServicePorts(new Set(group.servicePorts));
     }
   }, [group]);
+
+  const parseGroupServicePortKey = (key: string) => {
+    const parts = key.split(":");
+    if (parts.length !== 4) return null;
+    const [clusterContext, namespace, service, portStr] = parts;
+    const port = parseInt(portStr, 10);
+    if (!clusterContext || !namespace || !service || Number.isNaN(port))
+      return null;
+    return { clusterContext, namespace, service, port };
+  };
 
   const toggleCluster = (cluster: string) => {
     setExpandedClusters((prev) => ({
@@ -88,43 +115,99 @@ export function GroupForm({ group, onClose }: GroupFormProps) {
       port: { name: string; port: number; protocol: string };
     }> = [];
 
-    clusters.forEach((cluster: ClusterInfo) => {
-      Object.keys(services).forEach((key) => {
-        if (key.startsWith(`${cluster.context}:`)) {
-          const [, namespace] = key.split(":");
-          const serviceList = services[key] || [];
-          serviceList.forEach((service: ServiceInfo) => {
-            service.ports.forEach((port) => {
-              result.push({
-                cluster,
-                namespace,
-                service,
-                port: {
-                  name: port.name,
-                  port: port.port,
-                  protocol: port.protocol,
-                },
-              });
-            });
-          });
-        }
+    const candidatePorts = new Set<string>();
+
+    // Creating a group should only allow choosing from currently selected service ports.
+    Object.keys(selectedServices || {}).forEach((key) => {
+      const [clusterContext, namespace] = key.split(":");
+      const ports = selectedServices[key] || [];
+      ports.forEach((servicePortKey) => {
+        const [serviceName, portStr] = servicePortKey.split(":");
+        if (!clusterContext || !namespace || !serviceName || !portStr) return;
+        candidatePorts.add(
+          `${clusterContext}:${namespace}:${serviceName}:${portStr}`
+        );
+      });
+    });
+
+    // When editing, also include ports already in the group even if not currently selected.
+    (group?.servicePorts || []).forEach((key: string) =>
+      candidatePorts.add(key)
+    );
+
+    candidatePorts.forEach((fullKey) => {
+      const parsed = parseGroupServicePortKey(fullKey);
+      if (!parsed) return;
+
+      const { clusterContext, namespace, service: serviceName, port } = parsed;
+      const cluster =
+        clusters.find((c) => c.context === clusterContext) ||
+        ({
+          context: clusterContext,
+          name: clusterContext,
+          server: "",
+        } as ClusterInfo);
+
+      const serviceList = services[`${clusterContext}:${namespace}`] || [];
+      const service =
+        serviceList.find((s) => s.name === serviceName) ||
+        ({
+          name: serviceName,
+          namespace,
+          ports: [],
+        } as ServiceInfo);
+
+      const portInfo = serviceList
+        .find((s) => s.name === serviceName)
+        ?.ports.find((p) => p.port === port);
+
+      result.push({
+        cluster,
+        namespace,
+        service,
+        port: {
+          name: portInfo?.name || `${port}`,
+          port,
+          protocol: portInfo?.protocol || "TCP",
+        },
       });
     });
 
     return result;
   };
 
-  const availableServices = getAvailableServices();
-  const servicesByCluster = availableServices.reduce((acc, item) => {
-    if (!acc[item.cluster.context]) {
-      acc[item.cluster.context] = {};
-    }
-    if (!acc[item.cluster.context][item.namespace]) {
-      acc[item.cluster.context][item.namespace] = [];
-    }
-    acc[item.cluster.context][item.namespace].push(item);
-    return acc;
-  }, {} as Record<string, Record<string, typeof availableServices>>);
+  const availableServices = useMemo(
+    () => getAvailableServices(),
+    [clusters, services, selectedServices, group]
+  );
+  const servicesByCluster = useMemo(() => {
+    return availableServices.reduce((acc, item) => {
+      if (!acc[item.cluster.context]) {
+        acc[item.cluster.context] = {};
+      }
+      if (!acc[item.cluster.context][item.namespace]) {
+        acc[item.cluster.context][item.namespace] = [];
+      }
+      acc[item.cluster.context][item.namespace].push(item);
+      return acc;
+    }, {} as Record<string, Record<string, typeof availableServices>>);
+  }, [availableServices]);
+
+  const clustersToRender = useMemo(() => {
+    const contexts = Object.keys(servicesByCluster);
+    return contexts
+      .map((context) => {
+        return (
+          clusters.find((c) => c.context === context) ||
+          ({
+            context,
+            name: context,
+            server: "",
+          } as ClusterInfo)
+        );
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [clusters, servicesByCluster]);
 
   return (
     <div className="fixed inset-0 bg-skeuo-dark/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -176,14 +259,14 @@ export function GroupForm({ group, onClose }: GroupFormProps) {
               </span>
             </label>
             <div className="space-y-3">
-              {clusters.length === 0 ? (
+              {clustersToRender.length === 0 ? (
                 <div className="text-center p-6 skeuo-card shadow-skeuo-inset">
                   <p className="text-gray-400 font-medium text-sm">
-                    No clusters available
+                    No services selected
                   </p>
                 </div>
               ) : (
-                clusters.map((cluster: ClusterInfo) => {
+                clustersToRender.map((cluster: ClusterInfo) => {
                   const clusterServices =
                     servicesByCluster[cluster.context] || {};
                   const namespaceKeys = Object.keys(clusterServices);
