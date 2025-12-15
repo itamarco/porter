@@ -1,9 +1,9 @@
 export enum PortForwardState {
-  CONNECTING = 'CONNECTING',
-  ACTIVE = 'ACTIVE',
-  RECONNECTING = 'RECONNECTING',
-  FAILED = 'FAILED',
-  STOPPED = 'STOPPED',
+  CONNECTING = "CONNECTING",
+  ACTIVE = "ACTIVE",
+  RECONNECTING = "RECONNECTING",
+  FAILED = "FAILED",
+  STOPPED = "STOPPED",
 }
 
 export interface ClusterInfo {
@@ -55,6 +55,15 @@ export interface AppConfig {
   groups: Group[];
 }
 
+export interface UpdateInfo {
+  currentVersion: string;
+  latestVersion: string | null;
+  updateAvailable: boolean;
+  releaseUrl: string | null;
+  assetUrl: string | null;
+  releaseNotes: string | null;
+}
+
 export interface ElectronAPI {
   getClusters: () => Promise<ClusterInfo[]>;
   getNamespaces: (cluster: string) => Promise<string[]>;
@@ -68,7 +77,10 @@ export interface ElectronAPI {
   exportConfig: () => Promise<AppConfig>;
   importConfig: (config: AppConfig) => Promise<boolean>;
   exportConfigToFile: () => Promise<{ canceled: boolean; filePath?: string }>;
-  importConfigFromFile: () => Promise<{ canceled: boolean; config?: AppConfig }>;
+  importConfigFromFile: () => Promise<{
+    canceled: boolean;
+    config?: AppConfig;
+  }>;
   openInBrowser: (url: string) => Promise<boolean>;
   getLogPath: () => Promise<string>;
   onPortForwardUpdate: (callback: (data: PortForwardStatus) => void) => void;
@@ -76,6 +88,9 @@ export interface ElectronAPI {
   onConfigImported: (callback: () => void) => void;
   removePortForwardListener: () => void;
   removeConfigListeners: () => void;
+  checkForUpdates: () => Promise<UpdateInfo>;
+  onUpdateStatus: (callback: (data: UpdateInfo) => void) => void;
+  removeUpdateStatusListener: () => void;
 }
 
 declare global {
@@ -83,4 +98,3 @@ declare global {
     electronAPI?: ElectronAPI;
   }
 }
-

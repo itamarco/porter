@@ -42,4 +42,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.removeAllListeners("config-reset");
     ipcRenderer.removeAllListeners("config-imported");
   },
+  checkForUpdates: () => ipcRenderer.invoke("check-for-updates"),
+  onUpdateStatus: (callback: (data: any) => void) => {
+    ipcRenderer.on("update-status", (_event, data) => callback(data));
+  },
+  removeUpdateStatusListener: () => {
+    ipcRenderer.removeAllListeners("update-status");
+  },
 });

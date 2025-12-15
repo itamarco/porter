@@ -1,19 +1,44 @@
-import { ElectronAPI } from '../../types/electron';
+import { ElectronAPI } from "../../types/electron";
 
 export const createMockElectronAPI = (): ElectronAPI => ({
   getClusters: jest.fn().mockResolvedValue([]),
   getNamespaces: jest.fn().mockResolvedValue([]),
   getServices: jest.fn().mockResolvedValue([]),
-  startPortForward: jest.fn().mockResolvedValue('test-id'),
+  startPortForward: jest.fn().mockResolvedValue("test-id"),
   stopPortForward: jest.fn().mockResolvedValue(true),
   getActiveForwards: jest.fn().mockResolvedValue([]),
   loadConfig: jest.fn().mockResolvedValue({
     configuredNamespaces: {},
     portOverrides: {},
+    selectedServices: {},
+    groups: [],
   }),
   saveConfig: jest.fn().mockResolvedValue(true),
+  resetConfig: jest.fn().mockResolvedValue(true),
+  exportConfig: jest.fn().mockResolvedValue({
+    configuredNamespaces: {},
+    portOverrides: {},
+    selectedServices: {},
+    groups: [],
+  }),
+  importConfig: jest.fn().mockResolvedValue(true),
+  exportConfigToFile: jest.fn().mockResolvedValue({ canceled: false }),
+  importConfigFromFile: jest.fn().mockResolvedValue({ canceled: false }),
   openInBrowser: jest.fn().mockResolvedValue(true),
+  getLogPath: jest.fn().mockResolvedValue("/tmp/porter.log"),
   onPortForwardUpdate: jest.fn(),
+  onConfigReset: jest.fn(),
+  onConfigImported: jest.fn(),
   removePortForwardListener: jest.fn(),
+  removeConfigListeners: jest.fn(),
+  checkForUpdates: jest.fn().mockResolvedValue({
+    currentVersion: "1.0.0",
+    latestVersion: null,
+    updateAvailable: false,
+    releaseUrl: null,
+    assetUrl: null,
+    releaseNotes: null,
+  }),
+  onUpdateStatus: jest.fn(),
+  removeUpdateStatusListener: jest.fn(),
 });
-

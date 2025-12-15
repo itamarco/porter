@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
-import { usePortForwardStore } from '../stores/portforwards';
+import { useState, useRef, useEffect } from "react";
+import { usePortForwardStore } from "../stores/portforwards";
+import { UpdateInfo } from "../types/electron";
 
 export function ConfigMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const [checkingUpdates, setCheckingUpdates] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { loadConfig, resetState } = usePortForwardStore();
 
@@ -14,54 +16,58 @@ export function ConfigMenu() {
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
       return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener("mousedown", handleClickOutside);
       };
     }
   }, [isOpen]);
 
   const handleReset = async () => {
     if (!window.electronAPI) {
-      alert('Electron API not available');
+      alert("Electron API not available");
       return;
     }
 
-    if (!confirm('Are you sure you want to reset all state? This will delete all your configured namespaces, port overrides, selected services, and groups. This action cannot be undone.')) {
+    if (
+      !confirm(
+        "Are you sure you want to reset all state? This will delete all your configured namespaces, port overrides, selected services, and groups. This action cannot be undone."
+      )
+    ) {
       return;
     }
 
     try {
       await resetState();
-      alert('State has been reset successfully.');
+      alert("State has been reset successfully.");
     } catch (error) {
-      alert('Failed to reset state.');
-      console.error('Error resetting config:', error);
+      alert("Failed to reset state.");
+      console.error("Error resetting config:", error);
     }
     setIsOpen(false);
   };
 
   const handleExport = async () => {
     if (!window.electronAPI) {
-      alert('Electron API not available');
+      alert("Electron API not available");
       return;
     }
 
     try {
       const result = await window.electronAPI.exportConfigToFile();
       if (!result.canceled) {
-        alert('State has been exported successfully.');
+        alert("State has been exported successfully.");
       }
     } catch (error) {
-      alert('Failed to export state.');
-      console.error('Error exporting config:', error);
+      alert("Failed to export state.");
+      console.error("Error exporting config:", error);
     }
     setIsOpen(false);
   };
 
   const handleImport = async () => {
     if (!window.electronAPI) {
-      alert('Electron API not available');
+      alert("Electron API not available");
       return;
     }
 
@@ -69,13 +75,51 @@ export function ConfigMenu() {
       const result = await window.electronAPI.importConfigFromFile();
       if (!result.canceled) {
         await loadConfig();
-        alert('State has been imported successfully. Please reload the application to see the changes.');
+        alert(
+          "State has been imported successfully. Please reload the application to see the changes."
+        );
       }
     } catch (error) {
-      alert('Failed to import state. Please ensure the file is valid JSON.');
-      console.error('Error importing config:', error);
+      alert("Failed to import state. Please ensure the file is valid JSON.");
+      console.error("Error importing config:", error);
     }
     setIsOpen(false);
+  };
+
+  const handleCheckUpdates = async () => {
+    if (!window.electronAPI) {
+      alert("Electron API not available");
+      return;
+    }
+
+    setCheckingUpdates(true);
+    try {
+      const updateInfo: UpdateInfo = await window.electronAPI.checkForUpdates();
+      setIsOpen(false);
+
+      if (updateInfo.updateAvailable) {
+        const downloadUrl = updateInfo.assetUrl || updateInfo.releaseUrl;
+        if (downloadUrl) {
+          const shouldDownload = confirm(
+            `Porter v${updateInfo.latestVersion} is available!\n\n` +
+              `You're currently on v${updateInfo.currentVersion}.\n\n` +
+              `Would you like to download the update?`
+          );
+          if (shouldDownload) {
+            await window.electronAPI.openInBrowser(downloadUrl);
+          }
+        }
+      } else {
+        alert(
+          `You're already on the latest version (v${updateInfo.currentVersion}).`
+        );
+      }
+    } catch (error) {
+      alert("Failed to check for updates. Please try again later.");
+      console.error("Error checking for updates:", error);
+    } finally {
+      setCheckingUpdates(false);
+    }
   };
 
   return (
@@ -84,7 +128,11 @@ export function ConfigMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className={`
           p-3 rounded-xl text-gray-300 transition-all duration-200
-          ${isOpen ? 'shadow-skeuo-active text-skeuo-accent' : 'skeuo-btn hover:text-white'}
+          ${
+            isOpen
+              ? "shadow-skeuo-active text-skeuo-accent"
+              : "skeuo-btn hover:text-white"
+          }
         `}
         aria-label="Config menu"
       >
@@ -107,13 +155,46 @@ export function ConfigMenu() {
         <div className="absolute right-0 mt-4 w-56 skeuo-card p-2 z-50 overflow-hidden animate-fade-in">
           <div className="flex flex-col gap-2">
             <button
+              onClick={handleCheckUpdates}
+              disabled={checkingUpdates}
+              className="w-full text-left px-4 py-3 text-sm font-medium text-gray-300 hover:text-white hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <div className="p-1.5 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+              </div>
+              {checkingUpdates ? "Checking..." : "Check for Updates"}
+            </button>
+            <div className="border-t border-gray-700/50 my-1" />
+            <button
               onClick={handleReset}
               className="w-full text-left px-4 py-3 text-sm font-medium text-gray-300 hover:text-red-400 hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-3 group"
             >
               <div className="p-1.5 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
               </div>
               Reset State
             </button>
@@ -122,9 +203,19 @@ export function ConfigMenu() {
               className="w-full text-left px-4 py-3 text-sm font-medium text-gray-300 hover:text-white hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-3 group"
             >
               <div className="p-1.5 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
               </div>
               Export State
             </button>
@@ -133,9 +224,19 @@ export function ConfigMenu() {
               className="w-full text-left px-4 py-3 text-sm font-medium text-gray-300 hover:text-white hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-3 group"
             >
               <div className="p-1.5 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
               </div>
               Import State
             </button>

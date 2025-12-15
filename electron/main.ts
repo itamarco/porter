@@ -7,6 +7,7 @@ import { setupK8sHandlers } from "./k8s/handlers";
 import { PortForwardManager } from "./k8s/portforward";
 import { K8sClient } from "./k8s/client";
 import { resetConfig, exportConfig, importConfig } from "./config";
+import { checkForUpdates } from "./updater";
 
 app.setName("Porter");
 
@@ -250,17 +251,6 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
-  createMenu();
-  createWindow();
-
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
-});
-
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
@@ -271,4 +261,44 @@ setupK8sHandlers(ipcMain, portForwardManager);
 
 ipcMain.handle("get-log-path", async () => {
   return logger.getLogPath();
+});
+
+ipcMain.handle("check-for-updates", async () => {
+  return await checkForUpdates();
+});
+
+function scheduleUpdateCheck() {
+  if (!app.isPackaged) {
+    return;
+  }
+
+  setTimeout(async () => {
+    if (mainWindow) {
+      const updateInfo = await checkForUpdates();
+      if (updateInfo.updateAvailable) {
+        mainWindow.webContents.send("update-status", updateInfo);
+      }
+    }
+  }, 5000);
+
+  setInterval(async () => {
+    if (mainWindow) {
+      const updateInfo = await checkForUpdates();
+      if (updateInfo.updateAvailable) {
+        mainWindow.webContents.send("update-status", updateInfo);
+      }
+    }
+  }, 6 * 60 * 60 * 1000);
+}
+
+app.whenReady().then(() => {
+  createMenu();
+  createWindow();
+  scheduleUpdateCheck();
+
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
 });

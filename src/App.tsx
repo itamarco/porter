@@ -2,6 +2,7 @@ import { ClusterPanel } from "./components/ClusterPanel";
 import { ServiceList } from "./components/ServiceList";
 import { Groups } from "./components/Groups";
 import { ConfigMenu } from "./components/ConfigMenu";
+import { UpdateBanner } from "./components/UpdateBanner";
 import { useK8s } from "./hooks/useK8s";
 import { usePortForwardStore } from "./stores/portforwards";
 
@@ -26,6 +27,8 @@ function App() {
             <ConfigMenu />
           </div>
         </div>
+
+        <UpdateBanner />
 
         {error && (
           <div className="mb-4 p-3 rounded-2xl shadow-skeuo-inset-sm bg-red-500/10 border border-red-500/20 flex items-start gap-2">
