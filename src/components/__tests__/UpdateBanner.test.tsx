@@ -52,6 +52,9 @@ describe("UpdateBanner", () => {
       expect(
         screen.getByText(/You're currently on v1\.0\.0/i)
       ).toBeInTheDocument();
+      expect(
+        screen.getByText(/xattr -cr \/Applications\/Porter\.app/i)
+      ).toBeInTheDocument();
     });
   });
 

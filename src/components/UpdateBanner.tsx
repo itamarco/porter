@@ -88,8 +88,12 @@ export function UpdateBanner() {
         <p className="font-medium text-blue-300 mb-1">
           Porter v{updateInfo.latestVersion} available
         </p>
-        <p className="text-sm text-blue-400/80 mb-3">
+        <p className="text-sm text-blue-400/80 mb-1">
           You're currently on v{updateInfo.currentVersion}
+        </p>
+        <p className="text-sm text-blue-400/80 mb-3">
+          After installation run{" "}
+          <code className="font-mono">xattr -cr /Applications/Porter.app</code>
         </p>
         <div className="flex gap-2">
           <button
