@@ -3,6 +3,7 @@ import { ServiceList } from "./components/ServiceList";
 import { Groups } from "./components/Groups";
 import { ConfigMenu } from "./components/ConfigMenu";
 import { UpdateBanner } from "./components/UpdateBanner";
+import { ToastContainer } from "./components/Toast";
 import { useK8s } from "./hooks/useK8s";
 import { usePortForwardStore } from "./stores/portforwards";
 
@@ -55,6 +56,7 @@ function App() {
         <ServiceList />
         <ClusterPanel />
       </div>
+      <ToastContainer />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { usePortForwardStore } from "../stores/portforwards";
 import { PortForwardStatus } from "../types/electron";
+import { showToast } from "../components/Toast";
 
 export function useK8s() {
   const {
@@ -114,6 +115,9 @@ export function useK8s() {
     if (window.electronAPI) {
       window.electronAPI.onPortForwardUpdate((status: PortForwardStatus) => {
         updateForward(status);
+        if (status.state === "FAILED" && status.error) {
+          showToast(status.error, "error");
+        }
       });
     }
   };

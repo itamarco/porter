@@ -6,6 +6,7 @@ import {
   PortForwardState,
   ClusterInfo,
 } from "../types/electron";
+import { showToast } from "./Toast";
 
 export function ServiceList() {
   const {
@@ -433,7 +434,7 @@ function ServicePortRow({
 
   const handleStart = async () => {
     if (!window.electronAPI) {
-      alert("Electron API not available");
+      showToast("Electron API not available", "error");
       return;
     }
     try {
@@ -446,8 +447,9 @@ function ServicePortRow({
         localPort: parseInt(localPort, 10),
       });
     } catch (error) {
-      alert(
-        error instanceof Error ? error.message : "Failed to start port forward"
+      showToast(
+        error instanceof Error ? error.message : "Failed to start port forward",
+        "error"
       );
     } finally {
       setStarting(false);
