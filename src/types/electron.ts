@@ -46,6 +46,7 @@ export interface Group {
   id: string;
   name: string;
   servicePorts: string[];
+  localPort?: number;
 }
 
 export interface AppConfig {

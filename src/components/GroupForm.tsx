@@ -11,6 +11,9 @@ export function GroupForm({ group, onClose }: GroupFormProps) {
   const { clusters, services, selectedServices, createGroup, updateGroup } =
     usePortForwardStore();
   const [name, setName] = useState(group?.name || "");
+  const [localPort, setLocalPort] = useState(
+    group?.localPort ? group.localPort.toString() : ""
+  );
   const [selectedServicePorts, setSelectedServicePorts] = useState<Set<string>>(
     () => {
       if (group?.servicePorts?.length) {
@@ -41,6 +44,7 @@ export function GroupForm({ group, onClose }: GroupFormProps) {
   useEffect(() => {
     if (group) {
       setName(group.name);
+      setLocalPort(group.localPort ? group.localPort.toString() : "");
       setSelectedServicePorts(new Set(group.servicePorts));
     }
   }, [group]);
@@ -99,10 +103,23 @@ export function GroupForm({ group, onClose }: GroupFormProps) {
       return;
     }
 
+    const portValue = localPort.trim()
+      ? parseInt(localPort.trim(), 10)
+      : undefined;
+    if (localPort.trim() && (isNaN(portValue!) || portValue! <= 0)) {
+      alert("Please enter a valid port number");
+      return;
+    }
+
     if (group) {
-      updateGroup(group.id, name.trim(), Array.from(selectedServicePorts));
+      updateGroup(
+        group.id,
+        name.trim(),
+        Array.from(selectedServicePorts),
+        portValue
+      );
     } else {
-      createGroup(name.trim(), Array.from(selectedServicePorts));
+      createGroup(name.trim(), Array.from(selectedServicePorts), portValue);
     }
     onClose();
   };
@@ -249,6 +266,24 @@ export function GroupForm({ group, onClose }: GroupFormProps) {
               placeholder="Enter group name"
               required
             />
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+              Custom Port (Optional)
+            </label>
+            <input
+              type="number"
+              value={localPort}
+              onChange={(e) => setLocalPort(e.target.value)}
+              className="skeuo-input w-full px-5 py-3 text-sm text-gray-200 placeholder-gray-500"
+              placeholder="Leave empty to use individual port overrides"
+              min="1"
+              max="65535"
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              If specified, all services in this group will use this port when started together
+            </p>
           </div>
 
           <div className="mb-5">

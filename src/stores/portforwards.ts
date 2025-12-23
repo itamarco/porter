@@ -27,8 +27,8 @@ interface PortForwardStore {
   updateForward: (forward: PortForwardStatus) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
-  createGroup: (name: string, servicePorts: string[]) => void;
-  updateGroup: (id: string, name: string, servicePorts: string[]) => void;
+  createGroup: (name: string, servicePorts: string[], localPort?: number) => void;
+  updateGroup: (id: string, name: string, servicePorts: string[], localPort?: number) => void;
   deleteGroup: (id: string) => void;
   loadConfig: () => Promise<void>;
   saveConfig: () => Promise<void>;
@@ -134,12 +134,13 @@ export const usePortForwardStore = create<PortForwardStore>()((set, get) => ({
     }),
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
-  createGroup: (name, servicePorts) =>
+  createGroup: (name, servicePorts, localPort) =>
     set((state) => {
       const newGroup: Group = {
         id: `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         name,
         servicePorts,
+        localPort,
       };
       const updated = {
         groups: [...state.groups, newGroup],
@@ -149,11 +150,11 @@ export const usePortForwardStore = create<PortForwardStore>()((set, get) => ({
       }, 100);
       return updated;
     }),
-  updateGroup: (id, name, servicePorts) =>
+  updateGroup: (id, name, servicePorts, localPort) =>
     set((state) => {
       const updated = {
         groups: state.groups.map((group) =>
-          group.id === id ? { ...group, name, servicePorts } : group
+          group.id === id ? { ...group, name, servicePorts, localPort } : group
         ),
       };
       setTimeout(() => {
