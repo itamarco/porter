@@ -10,6 +10,7 @@ const MANIFEST_URL = `${BASE_URL}components-2.json`;
 const TARGETS = [
   { id: "gke-gcloud-auth-plugin-darwin-arm", archDir: "darwin-arm64" },
   { id: "gke-gcloud-auth-plugin-darwin-x86_64", archDir: "darwin-x64" },
+  { id: "gke-gcloud-auth-plugin-windows-x86_64", archDir: "win32-x64", isWindows: true },
 ];
 const PLUGIN_ROOT = path.join(__dirname, "..", "electron", "resources", "bin");
 
@@ -33,15 +34,29 @@ async function main() {
     await fs.promises.mkdir(destDir, { recursive: true });
 
     try {
-      await tar.extract({
-        file: archivePath,
-        cwd: destDir,
-        strip: 1,
-        filter: (entryPath) => entryPath.endsWith("bin/gke-gcloud-auth-plugin"),
-      });
+      if (target.isWindows) {
+        await tar.extract({
+          file: archivePath,
+          cwd: destDir,
+          strip: 1,
+          filter: (entryPath) => entryPath.endsWith("bin/gke-gcloud-auth-plugin.exe"),
+        });
 
-      const pluginPath = path.join(destDir, "gke-gcloud-auth-plugin");
-      await fs.promises.chmod(pluginPath, 0o755);
+        const pluginPath = path.join(destDir, "gke-gcloud-auth-plugin.exe");
+        if (fs.existsSync(pluginPath)) {
+          await fs.promises.chmod(pluginPath, 0o755);
+        }
+      } else {
+        await tar.extract({
+          file: archivePath,
+          cwd: destDir,
+          strip: 1,
+          filter: (entryPath) => entryPath.endsWith("bin/gke-gcloud-auth-plugin"),
+        });
+
+        const pluginPath = path.join(destDir, "gke-gcloud-auth-plugin");
+        await fs.promises.chmod(pluginPath, 0o755);
+      }
     } finally {
       await fs.promises.unlink(archivePath).catch(() => {});
     }

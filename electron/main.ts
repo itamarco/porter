@@ -13,16 +13,33 @@ app.setName("Porter");
 
 function fixPath() {
   const homedir = os.homedir();
-  const additionalPaths = [
-    "/usr/local/bin",
-    "/opt/homebrew/bin",
-    "/opt/homebrew/sbin",
-    path.join(homedir, "google-cloud-sdk", "bin"),
-    "/usr/local/google-cloud-sdk/bin",
-    path.join(homedir, "Downloads", "google-cloud-sdk", "bin"),
-    path.join(homedir, ".local", "bin"),
-    "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin",
-  ];
+  const pathSeparator = process.platform === "win32" ? ";" : ":";
+  
+  const additionalPaths: string[] = [];
+  if (process.platform === "darwin") {
+    additionalPaths.push(
+      "/usr/local/bin",
+      "/opt/homebrew/bin",
+      "/opt/homebrew/sbin",
+      path.join(homedir, "google-cloud-sdk", "bin"),
+      "/usr/local/google-cloud-sdk/bin",
+      path.join(homedir, "Downloads", "google-cloud-sdk", "bin"),
+      path.join(homedir, ".local", "bin"),
+      "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin"
+    );
+  } else if (process.platform === "win32") {
+    const programFiles = process.env["ProgramFiles"] || "C:\\Program Files";
+    const programFilesX86 = process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)";
+    const localAppData = process.env["LOCALAPPDATA"] || path.join(homedir, "AppData", "Local");
+    
+    additionalPaths.push(
+      path.join(programFiles, "Google", "Cloud SDK", "google-cloud-sdk", "bin"),
+      path.join(programFilesX86, "Google", "Cloud SDK", "google-cloud-sdk", "bin"),
+      path.join(localAppData, "Google", "Cloud SDK", "google-cloud-sdk", "bin"),
+      path.join(homedir, "google-cloud-sdk", "bin"),
+      path.join(homedir, "AppData", "Local", "Programs", "Google", "Cloud SDK", "google-cloud-sdk", "bin")
+    );
+  }
 
   const pluginCandidates: string[] = [];
   if (process.platform === "darwin") {
@@ -34,6 +51,14 @@ function fixPath() {
     pluginCandidates.push(
       path.join(__dirname, "..", "resources", "bin", archDir)
     );
+  } else if (process.platform === "win32") {
+    pluginCandidates.push(path.join(process.resourcesPath, "bin", "win32-x64"));
+    pluginCandidates.push(
+      path.join(__dirname, "..", "electron", "resources", "bin", "win32-x64")
+    );
+    pluginCandidates.push(
+      path.join(__dirname, "..", "resources", "bin", "win32-x64")
+    );
   }
 
   const currentPath = process.env.PATH || "";
@@ -43,7 +68,7 @@ function fixPath() {
   );
 
   if (pathsToAdd.length > 0) {
-    process.env.PATH = [...pathsToAdd, currentPath].filter(Boolean).join(":");
+    process.env.PATH = [...pathsToAdd, currentPath].filter(Boolean).join(pathSeparator);
   }
 }
 
@@ -207,6 +232,10 @@ function createWindow() {
     iconPath = app.isPackaged
       ? path.join(process.resourcesPath, "..", "icon.icns")
       : path.join(__dirname, "..", "assets", "icon.icns");
+  } else if (process.platform === "win32") {
+    iconPath = app.isPackaged
+      ? path.join(process.resourcesPath, "assets", "icon.ico")
+      : path.join(__dirname, "..", "assets", "icon.ico");
   } else {
     iconPath = app.isPackaged
       ? path.join(process.resourcesPath, "assets", "icon.png")
@@ -221,7 +250,7 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
-    titleBarStyle: "hiddenInset",
+    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : undefined,
     icon: iconPath && fs.existsSync(iconPath) ? iconPath : undefined,
   });
 

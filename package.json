@@ -1,17 +1,19 @@
 {
   "name": "porter",
   "version": "1.0.0",
-  "description": "Kubernetes port-forward manager for macOS",
+  "description": "Kubernetes port-forward manager for macOS and Windows",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
     "dev:vite": "vite",
     "dev:electron": "wait-on http://localhost:5173 && npm run build:electron && NODE_ENV=development electron .",
     "prebuild": "./scripts/cleanup-volumes.sh",
+    "prebuild:cross": "node -e \"if(process.platform==='darwin'){require('child_process').execSync('./scripts/cleanup-volumes.sh',{stdio:'inherit'})}\"",
     "build": "npm run prebuild && tsc && vite build && npm run build:electron && npm run prepare:gke-plugin && electron-builder",
     "build:ci": "npm run prebuild && tsc && vite build && npm run build:electron && npm run prepare:gke-plugin && electron-builder --mac --x64 --publish never && electron-builder --mac --arm64 --publish never",
     "build:arm64": "npm run prebuild && tsc && vite build && npm run prepare:gke-plugin && electron-builder --mac --arm64",
     "build:x64": "npm run prebuild && tsc && vite build && npm run prepare:gke-plugin && electron-builder --mac --x64",
+    "build:win": "npm run prebuild:cross && tsc && vite build && npm run build:electron && npm run prepare:gke-plugin && electron-builder --win --x64",
     "build:electron": "tsc -p electron/tsconfig.json",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -25,7 +27,8 @@
     "kubernetes",
     "port-forward",
     "k8s",
-    "macos"
+    "macos",
+    "windows"
   ],
   "author": "",
   "license": "MIT",
