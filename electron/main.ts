@@ -280,8 +280,25 @@ function createWindow() {
   });
 }
 
+let isQuitting = false;
+
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+app.on("before-quit", async (event) => {
+  if (!isQuitting) {
+    event.preventDefault();
+    isQuitting = true;
+    logger.info("App is quitting, stopping all port forwards...");
+    try {
+      await portForwardManager.stopAll();
+      logger.info("All port forwards stopped");
+    } catch (error) {
+      logger.error("Error stopping port forwards:", error);
+    }
     app.quit();
   }
 });

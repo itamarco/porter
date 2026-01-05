@@ -141,7 +141,7 @@ describe("setupK8sHandlers", () => {
   });
 
   it("should register stop-port-forward handler", async () => {
-    (mockPortForwardManager.stopPortForward as jest.Mock).mockReturnValue(true);
+    (mockPortForwardManager.stopPortForward as jest.Mock).mockResolvedValue(true);
 
     setupK8sHandlers(mockIpcMain, mockPortForwardManager);
 

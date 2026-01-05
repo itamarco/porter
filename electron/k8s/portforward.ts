@@ -74,6 +74,14 @@ export class PortForwardInstance extends EventEmitter {
       return;
     }
 
+    const isPortAvailable = await this.checkPortAvailability();
+    if (!isPortAvailable) {
+      logger.warn(
+        `[PortForward] Port ${this.config.localPort} is still in use, waiting for release...`
+      );
+      await this.waitForPortRelease();
+    }
+
     this.state = PortForwardState.CONNECTING;
     this.emit("status-change", this.getStatus());
 
@@ -165,6 +173,46 @@ export class PortForwardInstance extends EventEmitter {
       });
       this.handleError(`Failed to spawn kubectl: ${error.message}`);
     });
+  }
+
+  private async checkPortAvailability(): Promise<boolean> {
+    return new Promise((resolve) => {
+      const server = net.createServer();
+      
+      server.once("error", () => {
+        resolve(false);
+      });
+      
+      server.once("listening", () => {
+        server.close(() => {
+          resolve(true);
+        });
+      });
+      
+      server.listen(this.config.localPort, "127.0.0.1");
+    });
+  }
+
+  private async waitForPortRelease(): Promise<void> {
+    const maxAttempts = 10;
+    const delayMs = 500;
+    
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+      
+      const isAvailable = await this.checkPortAvailability();
+      if (isAvailable) {
+        logger.info(
+          `[PortForward] Port ${this.config.localPort} is now available after ${attempt + 1} attempts`
+        );
+        return;
+      }
+    }
+    
+    logger.error(
+      `[PortForward] Port ${this.config.localPort} still not available after ${maxAttempts} attempts`
+    );
+    throw new Error(`Port ${this.config.localPort} is already in use and could not be released`);
   }
 
   private async getPodName(): Promise<string | null> {
@@ -378,13 +426,35 @@ export class PortForwardInstance extends EventEmitter {
   }
 
   private killProcess() {
-    if (this.process) {
-      this.process.kill("SIGTERM");
+    if (this.process && !this.process.killed) {
+      const pid = this.process.pid;
+      
+      if (process.platform === "win32" && pid) {
+        try {
+          spawn("taskkill", ["/pid", pid.toString(), "/T", "/F"], {
+            stdio: "ignore",
+          });
+          logger.info(`[PortForward] Forcefully killed kubectl process ${pid} on Windows for ${this.config.id}`);
+        } catch (error) {
+          logger.error(`[PortForward] Failed to kill process ${pid} on Windows:`, error);
+          this.process.kill("SIGKILL");
+        }
+      } else {
+        this.process.kill("SIGTERM");
+        
+        setTimeout(() => {
+          if (this.process && !this.process.killed) {
+            logger.warn(`[PortForward] Process ${pid} did not terminate, sending SIGKILL for ${this.config.id}`);
+            this.process.kill("SIGKILL");
+          }
+        }, 1000);
+      }
+      
       this.process = null;
     }
   }
 
-  stop() {
+  async stop() {
     this.state = PortForwardState.STOPPED;
     this.clearConnectionTimeout();
     this.clearReconnectTimeout();
@@ -395,6 +465,12 @@ export class PortForwardInstance extends EventEmitter {
     }
 
     this.killProcess();
+    
+    if (process.platform === "win32") {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      logger.info(`[PortForward] Waiting for port ${this.config.localPort} to be released on Windows`);
+    }
+    
     this.emit("status-change", this.getStatus());
   }
 
@@ -438,10 +514,10 @@ export class PortForwardManager extends EventEmitter {
     return id;
   }
 
-  stopPortForward(id: string): boolean {
+  async stopPortForward(id: string): Promise<boolean> {
     const instance = this.forwards.get(id);
     if (instance) {
-      instance.stop();
+      await instance.stop();
       this.forwards.delete(id);
       return true;
     }
@@ -458,10 +534,11 @@ export class PortForwardManager extends EventEmitter {
     return this.forwards.get(id);
   }
 
-  stopAll() {
-    for (const instance of this.forwards.values()) {
-      instance.stop();
-    }
+  async stopAll() {
+    const stopPromises = Array.from(this.forwards.values()).map((instance) =>
+      instance.stop()
+    );
+    await Promise.all(stopPromises);
     this.forwards.clear();
   }
 }

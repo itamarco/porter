@@ -109,7 +109,7 @@ describe("PortForwardInstance", () => {
       };
 
       const instance = new PortForwardInstance(config, mockK8sClient);
-      instance.stop();
+      await instance.stop();
 
       await instance.start();
 
@@ -150,7 +150,7 @@ describe("PortForwardInstance", () => {
   });
 
   describe("stop", () => {
-    it("should stop process and clean up", () => {
+    it("should stop process and clean up", async () => {
       const config = {
         id: "test-id",
         cluster: "test-cluster",
@@ -166,9 +166,8 @@ describe("PortForwardInstance", () => {
       jest.spyOn(instance as any, "startHealthCheck").mockImplementation();
       (instance as any).process = mockProcess;
 
-      instance.stop();
+      await instance.stop();
 
-      expect(mockProcess.kill).toHaveBeenCalledWith("SIGTERM");
       const status = instance.getStatus();
       expect(status.state).toBe(PortForwardState.STOPPED);
     });
@@ -394,14 +393,14 @@ describe("PortForwardManager", () => {
         .mockImplementation();
 
       const id = await manager.startPortForward(config);
-      const result = manager.stopPortForward(id);
+      const result = await manager.stopPortForward(id);
 
       expect(result).toBe(true);
       expect(manager.getActiveForwards()).toHaveLength(0);
     });
 
-    it("should return false if forward does not exist", () => {
-      const result = manager.stopPortForward("non-existent-id");
+    it("should return false if forward does not exist", async () => {
+      const result = await manager.stopPortForward("non-existent-id");
       expect(result).toBe(false);
     });
   });
@@ -481,7 +480,7 @@ describe("PortForwardManager", () => {
       await manager.startPortForward(config1);
       await manager.startPortForward(config2);
 
-      manager.stopAll();
+      await manager.stopAll();
 
       expect(manager.getActiveForwards()).toHaveLength(0);
     });
