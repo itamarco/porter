@@ -1,10 +1,45 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { UpdateInfo } from "../types/electron";
+
+const DISMISSED_VERSIONS_KEY = "porter.dismissedUpdateVersions";
+
+function getDismissedVersions(): Set<string> {
+  try {
+    const stored = localStorage.getItem(DISMISSED_VERSIONS_KEY);
+    if (stored) {
+      const versions = JSON.parse(stored) as string[];
+      return new Set(versions);
+    }
+  } catch (error) {
+    console.error("Error reading dismissed versions:", error);
+  }
+  return new Set<string>();
+}
+
+function saveDismissedVersion(version: string): void {
+  try {
+    const dismissedVersions = getDismissedVersions();
+    dismissedVersions.add(version);
+    localStorage.setItem(
+      DISMISSED_VERSIONS_KEY,
+      JSON.stringify(Array.from(dismissedVersions))
+    );
+  } catch (error) {
+    console.error("Error saving dismissed version:", error);
+  }
+}
+
+function isVersionDismissed(version: string | null): boolean {
+  if (!version) {
+    return false;
+  }
+  const dismissedVersions = getDismissedVersions();
+  return dismissedVersions.has(version);
+}
 
 export function UpdateBanner() {
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
   const [isDismissed, setIsDismissed] = useState(false);
-  const dismissedVersionRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!window.electronAPI) {
@@ -17,6 +52,11 @@ export function UpdateBanner() {
       try {
         const info = await electronAPI.checkForUpdates();
         if (info.updateAvailable) {
+          if (info.latestVersion && isVersionDismissed(info.latestVersion)) {
+            setIsDismissed(true);
+          } else {
+            setIsDismissed(false);
+          }
           setUpdateInfo(info);
         }
       } catch (error) {
@@ -28,10 +68,9 @@ export function UpdateBanner() {
 
     const handleUpdateStatus = (info: UpdateInfo) => {
       if (info.updateAvailable) {
-        if (
-          info.latestVersion &&
-          dismissedVersionRef.current !== info.latestVersion
-        ) {
+        if (info.latestVersion && isVersionDismissed(info.latestVersion)) {
+          setIsDismissed(true);
+        } else {
           setIsDismissed(false);
         }
         setUpdateInfo(info);
@@ -58,9 +97,9 @@ export function UpdateBanner() {
 
   const handleDismiss = () => {
     if (updateInfo?.latestVersion) {
-      dismissedVersionRef.current = updateInfo.latestVersion;
+      saveDismissedVersion(updateInfo.latestVersion);
+      setIsDismissed(true);
     }
-    setIsDismissed(true);
   };
 
   if (!updateInfo || isDismissed || !updateInfo.updateAvailable) {
@@ -92,7 +131,7 @@ export function UpdateBanner() {
           You're currently on v{updateInfo.currentVersion}
         </p>
         <p className="text-sm text-blue-400/80 mb-3">
-          After installation run{" "}
+          After installation on macOS, run{" "}
           <code className="font-mono">xattr -cr /Applications/Porter.app</code>
         </p>
         <div className="flex gap-2">

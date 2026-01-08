@@ -5,10 +5,19 @@ import { UpdateInfo } from "../../types/electron";
 
 describe("UpdateBanner", () => {
   const mockElectronAPI = createMockElectronAPI();
+  let mockLocalStorage: { [key: string]: string } = {};
 
   beforeEach(() => {
     window.electronAPI = mockElectronAPI as any;
     jest.clearAllMocks();
+    mockLocalStorage = {};
+    Storage.prototype.getItem = jest.fn((key: string) => mockLocalStorage[key] || null);
+    Storage.prototype.setItem = jest.fn((key: string, value: string) => {
+      mockLocalStorage[key] = value;
+    });
+    Storage.prototype.removeItem = jest.fn((key: string) => {
+      delete mockLocalStorage[key];
+    });
   });
 
   it("should not render when no update is available", async () => {
@@ -187,6 +196,75 @@ describe("UpdateBanner", () => {
       expect(
         screen.queryByText(/Porter v1\.1\.0 available/i)
       ).not.toBeInTheDocument();
+    });
+
+    expect(localStorage.setItem).toHaveBeenCalledWith(
+      "porter.dismissedUpdateVersions",
+      JSON.stringify(["1.1.0"])
+    );
+  });
+
+  it("should not show banner for dismissed version after remount", async () => {
+    const updateInfo: UpdateInfo = {
+      currentVersion: "1.0.0",
+      latestVersion: "1.1.0",
+      updateAvailable: true,
+      releaseUrl: "https://github.com/itamarco/porter/releases/tag/v1.1.0",
+      assetUrl:
+        "https://github.com/itamarco/porter/releases/download/v1.1.0/Porter-1.1.0-arm64.dmg",
+      releaseNotes: "Release notes",
+    };
+
+    mockLocalStorage["porter.dismissedUpdateVersions"] = JSON.stringify(["1.1.0"]);
+
+    (mockElectronAPI.checkForUpdates as jest.Mock).mockResolvedValue(
+      updateInfo
+    );
+
+    render(<UpdateBanner />);
+
+    await waitFor(() => {
+      expect(mockElectronAPI.checkForUpdates).toHaveBeenCalled();
+    });
+
+    expect(
+      screen.queryByText(/Porter v1\.1\.0 available/i)
+    ).not.toBeInTheDocument();
+  });
+
+  it("should show banner for new version after dismissing previous version", async () => {
+    const updateInfo1: UpdateInfo = {
+      currentVersion: "1.0.0",
+      latestVersion: "1.1.0",
+      updateAvailable: true,
+      releaseUrl: "https://github.com/itamarco/porter/releases/tag/v1.1.0",
+      assetUrl:
+        "https://github.com/itamarco/porter/releases/download/v1.1.0/Porter-1.1.0-arm64.dmg",
+      releaseNotes: "Release notes",
+    };
+
+    mockLocalStorage["porter.dismissedUpdateVersions"] = JSON.stringify(["1.1.0"]);
+
+    const updateInfo2: UpdateInfo = {
+      currentVersion: "1.0.0",
+      latestVersion: "1.2.0",
+      updateAvailable: true,
+      releaseUrl: "https://github.com/itamarco/porter/releases/tag/v1.2.0",
+      assetUrl:
+        "https://github.com/itamarco/porter/releases/download/v1.2.0/Porter-1.2.0-arm64.dmg",
+      releaseNotes: "Release notes",
+    };
+
+    (mockElectronAPI.checkForUpdates as jest.Mock).mockResolvedValue(
+      updateInfo2
+    );
+
+    render(<UpdateBanner />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Porter v1\.2\.0 available/i)
+      ).toBeInTheDocument();
     });
   });
 
