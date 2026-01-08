@@ -2,7 +2,8 @@
 
 > A beautiful macOS app for managing Kubernetes port-forwards with ease
 
-> ⚠️ **First time installing?** See [⚠️ "App is damaged" Error](#️-app-is-damaged-error) if macOS blocks the app
+> ⚠️ **First time installing on macOS?** See [⚠️ "App is damaged" Error](#️-app-is-damaged-error) if macOS blocks the app
+
 ---
 
 ## ✨ Features
@@ -106,8 +107,22 @@ Porter logs all operations to help with debugging. Logs are automatically writte
 
 Logs are stored at:
 
+**macOS:**
+
 ```
 ~/Library/Logs/porter/main.log
+```
+
+**Windows:**
+
+```
+%USERPROFILE%\AppData\Roaming\porter\logs\main.log
+```
+
+Or in expanded form:
+
+```
+C:\Users\<YourUsername>\AppData\Roaming\porter\logs\main.log
 ```
 
 ### Viewing Logs
@@ -119,11 +134,22 @@ Logs are stored at:
 
 **In Production:**
 
+**macOS:**
+
 - View logs using macOS Console.app:
   1. Open **Console.app** (Applications > Utilities)
   2. Search for "porter" or navigate to your user logs
   3. Select `~/Library/Logs/porter/main.log`
 - Or open the log file directly in a text editor
+
+**Windows:**
+
+- Open File Explorer and navigate to: `%USERPROFILE%\AppData\Roaming\porter\logs\`
+- Open `main.log` in any text editor (Notepad, VS Code, etc.)
+- Or press `Win + R`, type `%USERPROFILE%\AppData\Roaming\porter\logs\main.log` and press Enter
+
+**Both Platforms:**
+
 - You can also get the log path programmatically via `window.electronAPI.getLogPath()`
 
 ### Log Levels

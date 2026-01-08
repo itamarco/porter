@@ -49,5 +49,19 @@
     ],
     "writeUpdateInfo": false,
     "artifactName": "${productName}-${version}-${arch}.${ext}"
+  },
+  "win": {
+    "icon": "assets/icon.ico",
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "artifactName": "${productName}-${version}-${arch}-setup.${ext}"
   }
 }

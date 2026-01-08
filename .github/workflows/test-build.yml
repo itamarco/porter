@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-build:
+  test-build-macos:
     runs-on: macos-latest
 
     steps:
@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build application
+      - name: Build macOS application
         run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -33,6 +33,52 @@ jobs:
           test -d dist && echo "✓ dist directory exists" || echo "ERROR: dist directory not found"
           test -d release && echo "✓ release directory exists" || echo "ERROR: release directory not found"
           ls -la release/ || echo "No release files found"
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-artifacts
+          path: release/*.dmg
+          if-no-files-found: warn
+          retention-days: 7
+
+  test-build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Windows application
+        run: npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify build artifacts
+        run: |
+          echo "Checking build artifacts..."
+          if (Test-Path dist-electron) { Write-Host "✓ dist-electron directory exists" } else { Write-Host "ERROR: dist-electron directory not found" }
+          if (Test-Path dist-electron\main.js) { Write-Host "✓ dist-electron/main.js exists" } else { Write-Host "ERROR: dist-electron/main.js not found" }
+          if (Test-Path dist) { Write-Host "✓ dist directory exists" } else { Write-Host "ERROR: dist directory not found" }
+          if (Test-Path release) { Write-Host "✓ release directory exists" } else { Write-Host "ERROR: release directory not found" }
+          Get-ChildItem release\ -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "Found: $($_.Name)" }
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-artifacts
+          path: release/*.exe
+          if-no-files-found: warn
+          retention-days: 7
 
 
 
