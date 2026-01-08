@@ -194,14 +194,14 @@ export function ServiceList() {
 
   if (clustersWithSelectedServices.length === 0) {
     return (
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-200 mb-4 tracking-wide">
+      <div className="mb-4">
+        <h2 className="text-lg font-bold text-gray-200 mb-3 tracking-wide">
           Selected Services
         </h2>
-        <div className="skeuo-card p-6 text-center shadow-skeuo-inset">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-skeuo-bg shadow-skeuo flex items-center justify-center text-gray-500">
+        <div className="skeuo-card p-4 text-center shadow-skeuo-inset">
+          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-skeuo-bg shadow-skeuo flex items-center justify-center text-gray-500">
             <svg
-              className="w-6 h-6"
+              className="w-5 h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -214,10 +214,10 @@ export function ServiceList() {
               />
             </svg>
           </div>
-          <p className="text-gray-300 font-medium text-sm">
+          <p className="text-gray-300 font-medium text-xs">
             No services selected
           </p>
-          <p className="text-xs text-gray-500 mt-1.5">
+          <p className="text-[10px] text-gray-500 mt-1">
             Select services from namespaces below to see them here
           </p>
         </div>
@@ -226,11 +226,11 @@ export function ServiceList() {
   }
 
   return (
-    <div className="mb-6">
-      <h2 className="text-xl font-bold text-gray-200 mb-4 tracking-wide">
+    <div className="mb-4">
+      <h2 className="text-lg font-bold text-gray-200 mb-3 tracking-wide">
         Selected Services
       </h2>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {clustersWithSelectedServices.map((cluster) => {
           const selectedServicePorts = getSelectedServicePorts(cluster);
           const isExpanded = expandedClusters[cluster.context] || false;
@@ -246,16 +246,16 @@ export function ServiceList() {
 
           return (
             <div key={cluster.context} className="skeuo-card overflow-hidden">
-              <div className="px-5 py-3 flex items-center justify-between">
+              <div className="px-3 py-2 flex items-center justify-between">
                 <button
                   onClick={() => toggleCluster(cluster.context)}
                   className={`flex-1 flex items-center justify-between transition-colors text-left ${
                     isExpanded ? "bg-skeuo-light/10" : "hover:bg-skeuo-light/5"
-                  } -mx-5 -my-3 px-5 py-3`}
+                  } -mx-3 -my-2 px-3 py-2`}
                 >
-                  <span className="font-bold text-base text-gray-200 flex items-center gap-2">
+                  <span className="font-bold text-sm text-gray-200 flex items-center gap-1.5">
                     <svg
-                      className="w-4 h-4 text-gray-400"
+                      className="w-3.5 h-3.5 text-gray-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -270,14 +270,14 @@ export function ServiceList() {
                     {cluster.name}
                   </span>
                   <div
-                    className={`w-7 h-7 rounded-full shadow-skeuo flex items-center justify-center transition-all duration-300 ${
+                    className={`w-6 h-6 rounded-full shadow-skeuo flex items-center justify-center transition-all duration-300 ${
                       isExpanded
                         ? "shadow-skeuo-active text-skeuo-accent"
                         : "text-gray-400"
                     }`}
                   >
                     <svg
-                      className={`w-3.5 h-3.5 transition-transform duration-300 ${
+                      className={`w-3 h-3 transition-transform duration-300 ${
                         isExpanded ? "rotate-180" : ""
                       }`}
                       fill="none"
@@ -294,12 +294,12 @@ export function ServiceList() {
                   </div>
                 </button>
 
-                <div className="flex gap-2 ml-5">
+                <div className="flex gap-1.5 ml-3">
                   <button
                     onClick={() => handleStartAll(cluster)}
                     disabled={isStarting || isStopping || allActive}
                     className={`
-                      px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 font-bold text-xs
+                      px-2.5 py-1.5 rounded-xl transition-all flex items-center gap-1 font-bold text-[10px]
                       ${
                         isStarting || allActive
                           ? "text-gray-600 bg-skeuo-bg shadow-none cursor-not-allowed"
@@ -311,7 +311,7 @@ export function ServiceList() {
                     {isStarting ? (
                       <>
                         <svg
-                          className="animate-spin w-3.5 h-3.5"
+                          className="animate-spin w-3 h-3"
                           fill="none"
                           viewBox="0 0 24 24"
                         >
@@ -334,7 +334,7 @@ export function ServiceList() {
                     ) : (
                       <>
                         <svg
-                          className="w-3.5 h-3.5"
+                          className="w-3 h-3"
                           fill="currentColor"
                           viewBox="0 0 24 24"
                         >
@@ -350,7 +350,7 @@ export function ServiceList() {
                       isStopping || activeForwardsForCluster.length === 0
                     }
                     className={`
-                      px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 font-bold text-xs
+                      px-2.5 py-1.5 rounded-xl transition-all flex items-center gap-1 font-bold text-[10px]
                       ${
                         isStopping || activeForwardsForCluster.length === 0
                           ? "text-gray-600 bg-skeuo-bg shadow-none cursor-not-allowed"
@@ -360,7 +360,7 @@ export function ServiceList() {
                     title="Stop All"
                   >
                     <svg
-                      className="w-3.5 h-3.5"
+                      className="w-3 h-3"
                       fill="currentColor"
                       viewBox="0 0 24 24"
                     >
@@ -371,8 +371,8 @@ export function ServiceList() {
                 </div>
               </div>
               {isExpanded && (
-                <div className="px-5 py-4 bg-skeuo-dark shadow-skeuo-inset border-t border-white/5">
-                  <div className="grid grid-cols-1 gap-3">
+                <div className="px-3 py-2.5 bg-skeuo-dark shadow-skeuo-inset border-t border-white/5">
+                  <div className="grid grid-cols-1 gap-2">
                     {selectedServicePorts.map((item, index) => (
                       <ServicePortRow
                         key={`${item.service}-${item.port.port}-${index}`}
@@ -478,7 +478,7 @@ function ServicePortRow({
   return (
     <div
       className={`
-      flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-xl transition-all duration-300
+      flex flex-col sm:flex-row sm:items-center gap-2 p-2 rounded-xl transition-all duration-300
       ${
         isActive
           ? "bg-skeuo-bg shadow-skeuo-active border border-green-500/20"
@@ -486,9 +486,9 @@ function ServicePortRow({
       }
     `}
     >
-      <div className="flex-1 min-w-0 flex items-center gap-2.5">
+      <div className="flex-1 min-w-0 flex items-center gap-2">
         <div
-          className={`w-2.5 h-2.5 rounded-full shadow-inner flex-shrink-0 ${
+          className={`w-2 h-2 rounded-full shadow-inner flex-shrink-0 ${
             isActive
               ? "bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]"
               : "bg-gray-600"
@@ -496,13 +496,13 @@ function ServicePortRow({
         />
         <div className="flex flex-col overflow-hidden">
           <span
-            className={`text-sm font-bold truncate ${
+            className={`text-xs font-bold truncate ${
               isActive ? "text-green-400" : "text-gray-200"
             }`}
           >
             {service}
           </span>
-          <div className="flex items-center text-[10px] text-gray-400 space-x-1.5">
+          <div className="flex items-center text-[9px] text-gray-400 space-x-1">
             <span className="font-medium">{port.name}</span>
             <span>•</span>
             <span>
@@ -514,14 +514,14 @@ function ServicePortRow({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:ml-auto">
+      <div className="flex items-center gap-1.5 sm:ml-auto">
         <div className="flex items-center bg-skeuo-dark rounded-lg p-1 shadow-skeuo-inset">
-          <span className="text-[10px] text-gray-500 px-1.5">→</span>
+          <span className="text-[9px] text-gray-500 px-1">→</span>
           <input
             type="number"
             value={localPort}
             onChange={(e) => handlePortChange(e.target.value)}
-            className="w-14 bg-transparent text-xs font-mono text-right text-gray-200 focus:outline-none px-1"
+            className="w-12 bg-transparent text-[10px] font-mono text-right text-gray-200 focus:outline-none px-1"
             placeholder="Local"
             min="1"
             max="65535"
@@ -530,14 +530,14 @@ function ServicePortRow({
         </div>
 
         {isActive ? (
-          <div className="flex gap-1.5">
+          <div className="flex gap-1">
             <button
               onClick={handleOpenBrowser}
-              className="skeuo-btn px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-gray-200 hover:text-white flex items-center gap-1"
+              className="skeuo-btn px-2 py-1 rounded-lg text-[9px] font-bold text-gray-200 hover:text-white flex items-center gap-0.5"
               title="Open in Browser"
             >
               <svg
-                className="w-3 h-3"
+                className="w-2.5 h-2.5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -552,10 +552,10 @@ function ServicePortRow({
             </button>
             <button
               onClick={handleStop}
-              className="skeuo-btn px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-red-400 hover:text-red-300 flex items-center gap-1 shadow-none hover:shadow-skeuo active:shadow-skeuo-active"
+              className="skeuo-btn px-2 py-1 rounded-lg text-[9px] font-bold text-red-400 hover:text-red-300 flex items-center gap-0.5 shadow-none hover:shadow-skeuo active:shadow-skeuo-active"
               title="Stop Forwarding"
             >
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6 6h12v12H6z" />
               </svg>
               <span>Stop</span>
@@ -566,7 +566,7 @@ function ServicePortRow({
             onClick={handleStart}
             disabled={starting || !localPort}
             className={`
-              px-4 py-1.5 rounded-lg text-[10px] font-bold text-white flex items-center gap-1.5 transition-all
+              px-3 py-1 rounded-lg text-[9px] font-bold text-white flex items-center gap-1 transition-all
               ${
                 starting || !localPort
                   ? "bg-gray-600 shadow-none cursor-not-allowed opacity-50"

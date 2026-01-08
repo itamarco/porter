@@ -14,13 +14,13 @@ function App() {
   return (
     <div className="h-screen w-screen overflow-y-auto bg-skeuo-bg text-gray-200 font-sans">
       <div className="electron-drag fixed top-0 left-0 right-0 h-20 z-50" />
-      <div className="p-6 max-w-6xl mx-auto pt-6">
-        <div className="mb-6 skeuo-card p-6 flex items-center justify-between">
+      <div className="p-4 max-w-6xl mx-auto pt-4">
+        <div className="mb-4 skeuo-card p-4 flex items-center justify-between">
           <div className="electron-drag flex-1">
-            <h1 className="text-3xl font-bold text-gray-100 mb-1 tracking-tight">
+            <h1 className="text-2xl font-bold text-gray-100 mb-0.5 tracking-tight">
               Porter
             </h1>
-            <p className="text-gray-400 text-base font-medium">
+            <p className="text-gray-400 text-sm font-medium">
               K8s Port Forward Manager
             </p>
           </div>
@@ -32,10 +32,10 @@ function App() {
         <UpdateBanner />
 
         {error && (
-          <div className="mb-4 p-3 rounded-2xl shadow-skeuo-inset-sm bg-red-500/10 border border-red-500/20 flex items-start gap-2">
+          <div className="mb-3 p-2 rounded-2xl shadow-skeuo-inset-sm bg-red-500/10 border border-red-500/20 flex items-start gap-2">
             <div className="mt-0.5 text-red-400">
               <svg
-                className="w-5 h-5"
+                className="w-4 h-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -48,7 +48,7 @@ function App() {
                 />
               </svg>
             </div>
-            <p className="font-medium text-red-300">{error}</p>
+            <p className="text-sm font-medium text-red-300">{error}</p>
           </div>
         )}
 

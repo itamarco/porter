@@ -127,7 +127,7 @@ export function ConfigMenu() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          p-3 rounded-xl text-gray-300 transition-all duration-200
+          p-2 rounded-xl text-gray-300 transition-all duration-200
           ${
             isOpen
               ? "shadow-skeuo-active text-skeuo-accent"
@@ -137,7 +137,7 @@ export function ConfigMenu() {
         aria-label="Config menu"
       >
         <svg
-          className="w-6 h-6"
+          className="w-5 h-5"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -152,16 +152,16 @@ export function ConfigMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-4 w-56 skeuo-card p-2 z-50 overflow-hidden animate-fade-in">
-          <div className="flex flex-col gap-2">
+        <div className="absolute right-0 mt-3 w-48 skeuo-card p-1.5 z-50 overflow-hidden animate-fade-in">
+          <div className="flex flex-col gap-1">
             <button
               onClick={handleCheckUpdates}
               disabled={checkingUpdates}
-              className="w-full text-left px-4 py-3 text-sm font-medium text-gray-300 hover:text-white hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full text-left px-3 py-2 text-xs font-medium text-gray-300 hover:text-white hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <div className="p-1.5 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
+              <div className="p-1 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
                 <svg
-                  className="w-4 h-4"
+                  className="w-3 h-3"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -176,14 +176,14 @@ export function ConfigMenu() {
               </div>
               {checkingUpdates ? "Checking..." : "Check for Updates"}
             </button>
-            <div className="border-t border-gray-700/50 my-1" />
+            <div className="border-t border-gray-700/50 my-0.5" />
             <button
               onClick={handleReset}
-              className="w-full text-left px-4 py-3 text-sm font-medium text-gray-300 hover:text-red-400 hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-3 group"
+              className="w-full text-left px-3 py-2 text-xs font-medium text-gray-300 hover:text-red-400 hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-2 group"
             >
-              <div className="p-1.5 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
+              <div className="p-1 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
                 <svg
-                  className="w-4 h-4"
+                  className="w-3 h-3"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -200,11 +200,11 @@ export function ConfigMenu() {
             </button>
             <button
               onClick={handleExport}
-              className="w-full text-left px-4 py-3 text-sm font-medium text-gray-300 hover:text-white hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-3 group"
+              className="w-full text-left px-3 py-2 text-xs font-medium text-gray-300 hover:text-white hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-2 group"
             >
-              <div className="p-1.5 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
+              <div className="p-1 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
                 <svg
-                  className="w-4 h-4"
+                  className="w-3 h-3"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -221,11 +221,11 @@ export function ConfigMenu() {
             </button>
             <button
               onClick={handleImport}
-              className="w-full text-left px-4 py-3 text-sm font-medium text-gray-300 hover:text-white hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-3 group"
+              className="w-full text-left px-3 py-2 text-xs font-medium text-gray-300 hover:text-white hover:bg-skeuo-bg/50 rounded-lg transition-colors flex items-center gap-2 group"
             >
-              <div className="p-1.5 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
+              <div className="p-1 rounded-md shadow-skeuo-sm bg-skeuo-bg group-hover:shadow-skeuo-active transition-all">
                 <svg
-                  className="w-4 h-4"
+                  className="w-3 h-3"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

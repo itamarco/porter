@@ -60,36 +60,36 @@ export function ClusterPane({
     >
       <button
         onClick={onToggle}
-        className={`w-full px-5 py-4 flex items-center justify-between transition-all duration-200 outline-none ${
+        className={`w-full px-3 py-2.5 flex items-center justify-between transition-all duration-200 outline-none ${
           isExpanded
-            ? "skeuo-btn mb-3 rounded-xl"
+            ? "skeuo-btn mb-2 rounded-xl"
             : "hover:bg-skeuo-light/30 rounded-2xl"
         }`}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div
-            className={`w-2.5 h-2.5 rounded-full shadow-skeuo-sm ${
+            className={`w-2 h-2 rounded-full shadow-skeuo-sm ${
               isExpanded ? "bg-skeuo-accent" : "bg-gray-500"
             }`}
           />
-          <span className="font-bold text-base text-gray-200 tracking-wide">
+          <span className="font-bold text-sm text-gray-200 tracking-wide">
             {cluster.name}
           </span>
           {availableNamespaces.length > 0 && (
-            <span className="text-[10px] font-bold text-gray-400 skeuo-badge px-2 py-0.5">
+            <span className="text-[9px] font-bold text-gray-400 skeuo-badge px-1.5 py-0.5">
               {availableNamespaces.length} NS
             </span>
           )}
         </div>
         <div
-          className={`p-1.5 rounded-full transition-all duration-300 ${
+          className={`p-1 rounded-full transition-all duration-300 ${
             isExpanded
               ? "shadow-skeuo-active text-skeuo-accent"
               : "shadow-skeuo text-gray-400"
           }`}
         >
           <svg
-            className={`w-4 h-4 transition-transform duration-300 ${
+            className={`w-3 h-3 transition-transform duration-300 ${
               isExpanded ? "rotate-180" : ""
             }`}
             fill="none"
@@ -107,26 +107,26 @@ export function ClusterPane({
       </button>
 
       {isExpanded && (
-        <div className="rounded-2xl shadow-skeuo-inset bg-skeuo-dark p-3">
+        <div className="rounded-2xl shadow-skeuo-inset bg-skeuo-dark p-2">
           {loadingNamespaces ? (
-            <div className="px-3 py-4 text-center">
-              <div className="animate-pulse flex flex-col items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-skeuo-light"></div>
-                <p className="text-xs text-gray-400 font-medium">
+            <div className="px-2 py-3 text-center">
+              <div className="animate-pulse flex flex-col items-center gap-1.5">
+                <div className="w-5 h-5 rounded-full bg-skeuo-light"></div>
+                <p className="text-[10px] text-gray-400 font-medium">
                   Loading namespaces...
                 </p>
               </div>
             </div>
           ) : hasError ? (
-            <div className="px-3 py-4 text-center">
-              <p className="text-xs text-red-400">Failed to load namespaces</p>
+            <div className="px-2 py-3 text-center">
+              <p className="text-[10px] text-red-400">Failed to load namespaces</p>
             </div>
           ) : availableNamespaces.length === 0 ? (
-            <div className="px-3 py-4 text-center">
-              <p className="text-xs text-gray-400">No namespaces found</p>
+            <div className="px-2 py-3 text-center">
+              <p className="text-[10px] text-gray-400">No namespaces found</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-2">
               {availableNamespaces.map((namespace) => (
                 <NamespaceChip
                   key={namespace}

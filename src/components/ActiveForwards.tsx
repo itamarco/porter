@@ -23,21 +23,21 @@ export function ActiveForwards() {
 
   if (activeForwards.length === 0) {
     return (
-      <div className="mt-6">
-        <h2 className="text-xl font-semibold text-gray-100 mb-3">
+      <div className="mt-4">
+        <h2 className="text-lg font-semibold text-gray-100 mb-2">
           Active Port Forwards
         </h2>
-        <p className="text-gray-300 text-sm">No active port forwards</p>
+        <p className="text-gray-300 text-xs">No active port forwards</p>
       </div>
     );
   }
 
   return (
-    <div className="mt-6">
-      <h2 className="text-xl font-semibold text-gray-100 mb-3">
+    <div className="mt-4">
+      <h2 className="text-lg font-semibold text-gray-100 mb-2">
         Active Port Forwards
       </h2>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {activeForwards.map((forward: PortForwardStatus) => (
           <ForwardCard key={forward.id} forward={forward} />
         ))}
@@ -94,19 +94,19 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
 
   return (
     <div
-      className="glass-card rounded-xl p-4"
+      className="glass-card rounded-xl p-3"
       style={{
         background: stateBgColors[forward.state],
         borderColor: stateBorderColors[forward.state],
       }}
     >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2.5">
-          <span className="font-semibold text-sm text-gray-100">
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-xs text-gray-100">
             {forward.service} ({forward.namespace})
           </span>
           <span
-            className="px-2 py-0.5 text-[10px] font-semibold rounded-lg glass-badge text-gray-100"
+            className="px-1.5 py-0.5 text-[9px] font-semibold rounded-lg glass-badge text-gray-100"
             style={{
               background: stateBgColors[forward.state],
               borderColor: stateBorderColors[forward.state],
@@ -115,11 +115,11 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
             {stateLabels[forward.state]}
           </span>
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-1">
           {forward.state === PortForwardState.FAILED && (
             <button
               onClick={handleRetry}
-              className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg text-gray-100"
+              className="px-2.5 py-1 text-[10px] font-semibold glass-button rounded-lg text-gray-100"
               style={{
                 background: "rgba(59, 130, 246, 0.25)",
                 borderColor: "rgba(59, 130, 246, 0.4)",
@@ -131,7 +131,7 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
           {forward.state !== PortForwardState.STOPPED && (
             <button
               onClick={handleStop}
-              className="px-3 py-1.5 text-xs font-semibold glass-button rounded-lg text-gray-100"
+              className="px-2.5 py-1 text-[10px] font-semibold glass-button rounded-lg text-gray-100"
               style={{
                 background: "rgba(220, 38, 38, 0.25)",
                 borderColor: "rgba(220, 38, 38, 0.4)",
@@ -142,23 +142,23 @@ function ForwardCard({ forward }: { forward: PortForwardStatus }) {
           )}
         </div>
       </div>
-      <div className="text-xs text-gray-300">
+      <div className="text-[10px] text-gray-300">
         <div>
           {forward.cluster} → localhost:{forward.localPort} (service port:{" "}
           {forward.servicePort})
         </div>
         {forward.error && (
-          <div className="mt-2 text-red-200 text-xs font-medium">
+          <div className="mt-1.5 text-red-200 text-[10px] font-medium">
             {forward.error}
           </div>
         )}
         {forward.retryCount > 0 && (
-          <div className="mt-2 text-yellow-200 text-xs">
+          <div className="mt-1.5 text-yellow-200 text-[10px]">
             Retry attempt: {forward.retryCount}/{5}
           </div>
         )}
         {forward.nextRetryAt && (
-          <div className="mt-2 text-yellow-200 text-xs">
+          <div className="mt-1.5 text-yellow-200 text-[10px]">
             Next retry: {new Date(forward.nextRetryAt).toLocaleTimeString()}
           </div>
         )}

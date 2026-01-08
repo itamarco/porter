@@ -22,11 +22,11 @@ export function NamespaceConfig() {
   };
 
   return (
-    <div className="mb-6">
-      <label className="block text-sm font-bold text-gray-200 mb-2.5 tracking-wide">
+    <div className="mb-4">
+      <label className="block text-xs font-bold text-gray-200 mb-1.5 tracking-wide">
         Configured Namespaces
       </label>
-      <div className="flex gap-2.5 mb-3">
+      <div className="flex gap-2 mb-2">
         <div className="relative flex-1">
           <select
             onChange={(e) => {
@@ -35,7 +35,7 @@ export function NamespaceConfig() {
                 e.target.value = "";
               }
             }}
-            className="w-full px-5 py-3 bg-skeuo-bg rounded-xl text-sm text-gray-200 font-medium appearance-none shadow-skeuo cursor-pointer focus:outline-none focus:shadow-skeuo-active transition-all"
+            className="w-full px-3 py-2 bg-skeuo-bg rounded-xl text-xs text-gray-200 font-medium appearance-none shadow-skeuo cursor-pointer focus:outline-none focus:shadow-skeuo-active transition-all"
           >
             <option value="">-- Add namespace --</option>
             {namespaces
@@ -46,9 +46,9 @@ export function NamespaceConfig() {
                 </option>
               ))}
           </select>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
             <svg
-              className="w-4 h-4"
+              className="w-3 h-3"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -63,24 +63,24 @@ export function NamespaceConfig() {
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap gap-2.5 p-3 skeuo-card shadow-skeuo-inset min-h-[80px]">
+      <div className="flex flex-wrap gap-2 p-2 skeuo-card shadow-skeuo-inset min-h-[60px]">
         {configured.length === 0 ? (
-          <span className="text-gray-500 italic text-xs">
+          <span className="text-gray-500 italic text-[10px]">
             No namespaces configured
           </span>
         ) : (
           configured.map((ns: string) => (
             <div
               key={ns}
-              className="inline-flex items-center pl-3 pr-1.5 py-1.5 rounded-full font-semibold text-xs bg-skeuo-bg shadow-skeuo text-gray-200 border border-transparent hover:border-skeuo-accent/30 transition-all group"
+              className="inline-flex items-center pl-2.5 pr-1 py-1 rounded-full font-semibold text-[10px] bg-skeuo-bg shadow-skeuo text-gray-200 border border-transparent hover:border-skeuo-accent/30 transition-all group"
             >
               {ns}
               <button
                 onClick={() => removeNamespace(selectedCluster, ns)}
-                className="ml-1.5 w-5 h-5 rounded-full flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                className="ml-1 w-4 h-4 rounded-full flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
               >
                 <svg
-                  className="w-3 h-3"
+                  className="w-2.5 h-2.5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

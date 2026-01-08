@@ -107,10 +107,10 @@ export function UpdateBanner() {
   }
 
   return (
-    <div className="mb-4 p-4 rounded-2xl shadow-skeuo-inset-sm bg-blue-500/10 border border-blue-500/20 flex items-start gap-3 animate-fade-in">
+    <div className="mb-3 p-3 rounded-2xl shadow-skeuo-inset-sm bg-blue-500/10 border border-blue-500/20 flex items-start gap-2 animate-fade-in">
       <div className="mt-0.5 text-blue-400 flex-shrink-0">
         <svg
-          className="w-5 h-5"
+          className="w-4 h-4"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -124,26 +124,28 @@ export function UpdateBanner() {
         </svg>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-blue-300 mb-1">
+        <p className="font-medium text-blue-300 mb-0.5 text-xs">
           Porter v{updateInfo.latestVersion} available
         </p>
-        <p className="text-sm text-blue-400/80 mb-1">
+        <p className="text-[10px] text-blue-400/80 mb-0.5">
           You're currently on v{updateInfo.currentVersion}
         </p>
-        <p className="text-sm text-blue-400/80 mb-3">
+        <p className="text-[10px] text-blue-400/80 mb-2">
           After installation on macOS, run{" "}
-          <code className="font-mono">xattr -cr /Applications/Porter.app</code>
+          <code className="font-mono text-[9px]">
+            xattr -cr /Applications/Porter.app
+          </code>
         </p>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           <button
             onClick={handleDownload}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors shadow-skeuo-sm hover:shadow-skeuo-active"
+            className="px-3 py-1.5 text-[10px] font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors shadow-skeuo-sm hover:shadow-skeuo-active"
           >
             Download Update
           </button>
           <button
             onClick={handleDismiss}
-            className="px-4 py-2 text-sm font-medium text-blue-300 hover:text-blue-200 rounded-lg transition-colors"
+            className="px-3 py-1.5 text-[10px] font-medium text-blue-300 hover:text-blue-200 rounded-lg transition-colors"
           >
             Dismiss
           </button>
