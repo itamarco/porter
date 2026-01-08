@@ -101,13 +101,8 @@ export function Groups() {
       for (const gsp of groupServicePorts) {
         if (!gsp) continue;
 
-        let localPort: number;
-        if (group.localPort) {
-          localPort = group.localPort;
-        } else {
-          const portOverrideKey = `${gsp.cluster}:${gsp.namespace}:${gsp.service}:${gsp.port}`;
-          localPort = getPortOverride(portOverrideKey) || gsp.port;
-        }
+        const portOverrideKey = `${gsp.cluster}:${gsp.namespace}:${gsp.service}:${gsp.port}`;
+        const localPort = getPortOverride(portOverrideKey) || gsp.port;
 
         try {
           await window.electronAPI.startPortForward({
@@ -182,16 +177,10 @@ export function Groups() {
     const startKey = `${params.groupId}:${params.cluster}:${params.namespace}:${params.service}:${params.servicePort}`;
     setStartingOne((prev) => ({ ...prev, [startKey]: true }));
     try {
-      const { getPortOverride, groups } = usePortForwardStore.getState();
-      const group = groups.find((g) => g.id === params.groupId);
+      const { getPortOverride } = usePortForwardStore.getState();
       
-      let localPort: number;
-      if (group?.localPort) {
-        localPort = group.localPort;
-      } else {
-        const portOverrideKey = `${params.cluster}:${params.namespace}:${params.service}:${params.servicePort}`;
-        localPort = getPortOverride(portOverrideKey) || params.servicePort;
-      }
+      const portOverrideKey = `${params.cluster}:${params.namespace}:${params.service}:${params.servicePort}`;
+      const localPort = getPortOverride(portOverrideKey) || params.servicePort;
 
       await window.electronAPI.startPortForward({
         cluster: params.cluster,
@@ -354,11 +343,6 @@ export function Groups() {
                     <span className="text-xs font-medium text-gray-500">
                       {groupServicePorts.length} service
                       {groupServicePorts.length !== 1 ? "s" : ""} configured
-                      {group.localPort && (
-                        <span className="ml-2 text-skeuo-accent">
-                          • Port: {group.localPort}
-                        </span>
-                      )}
                     </span>
                   </div>
 
