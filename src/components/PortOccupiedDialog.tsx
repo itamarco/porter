@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { ProcessInfo } from '../types/electron';
 import { fontSizes } from '../theme';
 

@@ -25,7 +25,9 @@ function App() {
     window.electronAPI.onPortOccupied(handlePortOccupied);
 
     return () => {
-      window.electronAPI.removePortOccupiedListener();
+      if (window.electronAPI) {
+        window.electronAPI.removePortOccupiedListener();
+      }
     };
   }, []);
 
