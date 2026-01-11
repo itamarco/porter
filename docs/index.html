@@ -10,6 +10,16 @@
     <title>Porter - Kubernetes Port-Forward Manager</title>
     <link rel="icon" type="image/png" href="icon.png" />
     <link rel="stylesheet" href="styles.css" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EKLY4T1R1E"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-EKLY4T1R1E');
+    </script>
   </head>
   <body>
     <!-- Navigation -->
@@ -51,7 +61,11 @@
             Kubernetes port-forwards simple and intuitive.
           </p>
           <div class="hero-buttons">
-            <a href="#macos-installation" class="btn btn-primary">
+            <a
+              href="#macos-installation"
+              class="btn btn-primary"
+              onclick="trackDownload('macos', 'hero')"
+            >
               <svg
                 width="20"
                 height="20"
@@ -64,9 +78,13 @@
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
-              Download for macOS
+              macOS
             </a>
-            <a href="#windows-installation" class="btn btn-secondary">
+            <a
+              href="#windows-installation"
+              class="btn btn-secondary"
+              onclick="trackDownload('windows', 'hero')"
+            >
               <svg
                 width="20"
                 height="20"
@@ -79,7 +97,7 @@
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
-              Download for Windows
+              Windows (untested)
             </a>
           </div>
           <div class="hero-requirements">
@@ -146,6 +164,7 @@
                   <a
                     href="https://github.com/itamarco/porter/releases/latest"
                     target="_blank"
+                    onclick="trackDownload('macos', 'releases-link')"
                     >Releases page</a
                   >
                 </p>
@@ -238,6 +257,7 @@
                   <a
                     href="https://github.com/itamarco/porter/releases/latest"
                     target="_blank"
+                    onclick="trackDownload('windows', 'releases-link')"
                     >Releases page</a
                   >
                 </p>
@@ -387,6 +407,18 @@
     </div>
 
     <script>
+      // Analytics: Track download clicks
+      function trackDownload(platform, location) {
+        if (typeof gtag !== "undefined") {
+          gtag("event", "download_click", {
+            platform: platform,
+            location: location,
+            event_category: "Downloads",
+            event_label: platform + " - " + location,
+          });
+        }
+      }
+
       function copyToClipboard(text, button) {
         navigator.clipboard.writeText(text).then(() => {
           const originalHTML = button.innerHTML;
