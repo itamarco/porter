@@ -6,9 +6,11 @@ import {
 import { K8sClient } from "../client";
 import { spawn, ChildProcess } from "child_process";
 import * as net from "net";
+import * as portUtils from "../port-utils";
 
 jest.mock("child_process");
 jest.mock("net");
+jest.mock("../port-utils");
 
 describe("PortForwardInstance", () => {
   let mockProcess: jest.Mocked<ChildProcess>;

@@ -3,6 +3,7 @@ import * as net from "net";
 import { EventEmitter } from "events";
 import { K8sClient } from "./client";
 import { logger } from "../logger";
+import { getProcessUsingPort, killProcess, ProcessInfo } from "./port-utils";
 
 export enum PortForwardState {
   CONNECTING = "CONNECTING",
@@ -42,6 +43,7 @@ export class PortForwardInstance extends EventEmitter {
   private readonly connectionTimeoutMs = 30000;
   private readonly healthCheckIntervalMs = 5000;
   private podName: string | null = null;
+  private portOccupiedResolver: ((shouldKill: boolean) => void) | null = null;
 
   constructor(
     private config: PortForwardConfig,
@@ -78,9 +80,34 @@ export class PortForwardInstance extends EventEmitter {
       const isPortAvailable = await this.checkPortAvailability();
       if (!isPortAvailable) {
         logger.warn(
-          `[PortForward] Port ${this.config.localPort} is still in use, waiting for release...`
+          `[PortForward] Port ${this.config.localPort} is in use, checking for process info...`
         );
-        await this.waitForPortRelease();
+        
+        const processInfo = await getProcessUsingPort(this.config.localPort);
+        if (processInfo) {
+          logger.info(
+            `[PortForward] Port ${this.config.localPort} is occupied by process ${processInfo.pid} (${processInfo.processName})`
+          );
+          
+          const shouldKill = await this.handlePortOccupied(processInfo);
+          
+          if (shouldKill) {
+            logger.info(`[PortForward] User chose to kill process ${processInfo.pid}`);
+            await killProcess(processInfo.pid);
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const isNowAvailable = await this.checkPortAvailability();
+            if (!isNowAvailable) {
+              throw new Error(`Port ${this.config.localPort} is still in use after killing process`);
+            }
+            logger.info(`[PortForward] Port ${this.config.localPort} is now available`);
+          } else {
+            throw new Error(`Port ${this.config.localPort} is already in use`);
+          }
+        } else {
+          await this.waitForPortRelease();
+        }
       }
 
       this.state = PortForwardState.CONNECTING;
@@ -107,6 +134,28 @@ export class PortForwardInstance extends EventEmitter {
       );
       this.handleError(errorMessage);
       throw error;
+    }
+  }
+
+  private async handlePortOccupied(processInfo: ProcessInfo): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.portOccupiedResolver = resolve;
+      this.emit("port-occupied", processInfo);
+      
+      setTimeout(() => {
+        if (this.portOccupiedResolver) {
+          logger.warn(`[PortForward] Timeout waiting for user decision on port occupation`);
+          this.portOccupiedResolver(false);
+          this.portOccupiedResolver = null;
+        }
+      }, 60000);
+    });
+  }
+
+  respondToPortOccupied(shouldKill: boolean) {
+    if (this.portOccupiedResolver) {
+      this.portOccupiedResolver(shouldKill);
+      this.portOccupiedResolver = null;
     }
   }
 
@@ -518,6 +567,10 @@ export class PortForwardManager extends EventEmitter {
       this.forwards.delete(id);
     });
 
+    instance.on("port-occupied", (processInfo) => {
+      this.emit("port-occupied", { ...processInfo, forwardId: id });
+    });
+
     this.forwards.set(id, instance);
     
     try {
@@ -551,6 +604,13 @@ export class PortForwardManager extends EventEmitter {
 
   getForward(id: string): PortForwardInstance | undefined {
     return this.forwards.get(id);
+  }
+
+  respondToPortOccupied(id: string, shouldKill: boolean) {
+    const instance = this.forwards.get(id);
+    if (instance) {
+      instance.respondToPortOccupied(shouldKill);
+    }
   }
 
   async stopAll() {

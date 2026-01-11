@@ -64,6 +64,14 @@ export interface UpdateInfo {
   releaseNotes: string | null;
 }
 
+export interface ProcessInfo {
+  pid: number;
+  port: number;
+  processName: string;
+  commandLine: string;
+  forwardId?: string;
+}
+
 export interface ElectronAPI {
   getClusters: () => Promise<ClusterInfo[]>;
   getNamespaces: (cluster: string) => Promise<string[]>;
@@ -91,6 +99,11 @@ export interface ElectronAPI {
   checkForUpdates: () => Promise<UpdateInfo>;
   onUpdateStatus: (callback: (data: UpdateInfo) => void) => void;
   removeUpdateStatusListener: () => void;
+  getPortProcess: (port: number) => Promise<ProcessInfo | null>;
+  killPortProcess: (port: number) => Promise<boolean>;
+  onPortOccupied: (callback: (data: ProcessInfo) => void) => void;
+  removePortOccupiedListener: () => void;
+  respondPortOccupied: (forwardId: string, shouldKill: boolean) => Promise<boolean>;
 }
 
 declare global {
