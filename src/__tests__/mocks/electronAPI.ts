@@ -41,4 +41,9 @@ export const createMockElectronAPI = (): ElectronAPI => ({
   }),
   onUpdateStatus: jest.fn(),
   removeUpdateStatusListener: jest.fn(),
+  getPortProcess: jest.fn().mockResolvedValue(null),
+  killPortProcess: jest.fn().mockResolvedValue(true),
+  onPortOccupied: jest.fn(),
+  removePortOccupiedListener: jest.fn(),
+  respondPortOccupied: jest.fn().mockResolvedValue(true),
 });

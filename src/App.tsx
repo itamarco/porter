@@ -1,15 +1,67 @@
+import { useEffect, useState } from "react";
 import { ClusterPanel } from "./components/ClusterPanel";
 import { ServiceList } from "./components/ServiceList";
 import { Groups } from "./components/Groups";
 import { ConfigMenu } from "./components/ConfigMenu";
 import { UpdateBanner } from "./components/UpdateBanner";
-import { ToastContainer } from "./components/Toast";
+import { ToastContainer, showToast } from "./components/Toast";
+import { PortOccupiedDialog } from "./components/PortOccupiedDialog";
 import { useK8s } from "./hooks/useK8s";
 import { usePortForwardStore } from "./stores/portforwards";
+import { ProcessInfo } from "./types/electron";
 
 function App() {
   useK8s();
   const { error } = usePortForwardStore();
+  const [portOccupiedInfo, setPortOccupiedInfo] = useState<ProcessInfo | null>(null);
+
+  useEffect(() => {
+    if (!window.electronAPI) return;
+
+    const handlePortOccupied = (data: ProcessInfo) => {
+      setPortOccupiedInfo(data);
+    };
+
+    window.electronAPI.onPortOccupied(handlePortOccupied);
+
+    return () => {
+      window.electronAPI.removePortOccupiedListener();
+    };
+  }, []);
+
+  const handleKillProcess = async () => {
+    if (!portOccupiedInfo || !window.electronAPI) return;
+
+    try {
+      await window.electronAPI.respondPortOccupied(
+        portOccupiedInfo.forwardId || "",
+        true
+      );
+      setPortOccupiedInfo(null);
+    } catch (error) {
+      showToast(
+        `Failed to kill process: ${error instanceof Error ? error.message : "Unknown error"}`,
+        "error"
+      );
+    }
+  };
+
+  const handleCancelKill = async () => {
+    if (!portOccupiedInfo || !window.electronAPI) return;
+
+    try {
+      await window.electronAPI.respondPortOccupied(
+        portOccupiedInfo.forwardId || "",
+        false
+      );
+      setPortOccupiedInfo(null);
+    } catch (error) {
+      showToast(
+        `Failed to cancel: ${error instanceof Error ? error.message : "Unknown error"}`,
+        "error"
+      );
+    }
+  };
 
   return (
     <div className="h-screen w-screen overflow-y-auto bg-skeuo-bg text-gray-200 font-sans">
@@ -57,6 +109,13 @@ function App() {
         <ClusterPanel />
       </div>
       <ToastContainer />
+      {portOccupiedInfo && (
+        <PortOccupiedDialog
+          processInfo={portOccupiedInfo}
+          onKill={handleKillProcess}
+          onCancel={handleCancelKill}
+        />
+      )}
     </div>
   );
 }

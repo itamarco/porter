@@ -6,13 +6,16 @@ import {
 import { K8sClient } from "../client";
 import { spawn, ChildProcess } from "child_process";
 import * as net from "net";
+import * as portUtils from "../port-utils";
 
 jest.mock("child_process");
 jest.mock("net");
+jest.mock("../port-utils");
 
 describe("PortForwardInstance", () => {
   let mockProcess: jest.Mocked<ChildProcess>;
   let mockK8sClient: jest.Mocked<K8sClient>;
+  let mockServer: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -31,7 +34,21 @@ describe("PortForwardInstance", () => {
 
     mockK8sClient = {} as any;
 
+    mockServer = {
+      once: jest.fn((event, callback) => {
+        if (event === "listening") {
+          setTimeout(() => callback(), 0);
+        }
+        return mockServer;
+      }),
+      listen: jest.fn(),
+      close: jest.fn((callback?: () => void) => {
+        if (callback) setTimeout(() => callback(), 0);
+      }),
+    };
+
     (spawn as jest.Mock).mockReturnValue(mockProcess);
+    (net.createServer as jest.Mock).mockReturnValue(mockServer);
   });
 
   afterEach(() => {
@@ -90,12 +107,13 @@ describe("PortForwardInstance", () => {
 
       const instance = new PortForwardInstance(config, mockK8sClient);
 
-      jest.spyOn(instance as any, "getPodName").mockResolvedValue("test-pod");
+      jest.spyOn(instance as any, "checkPortAvailability").mockResolvedValue(true);
+      jest.spyOn(instance as any, "spawnProcess").mockResolvedValue(undefined);
       jest.spyOn(instance as any, "startHealthCheck").mockImplementation();
 
       await instance.start();
 
-      expect((instance as any).getPodName).toHaveBeenCalled();
+      expect((instance as any).spawnProcess).toHaveBeenCalled();
     });
 
     it("should not start if already stopped", async () => {
@@ -130,7 +148,7 @@ describe("PortForwardInstance", () => {
       const statusChangeSpy = jest.fn();
       instance.on("status-change", statusChangeSpy);
 
-      jest.spyOn(instance as any, "getPodName").mockResolvedValue("test-pod");
+      jest.spyOn(instance as any, "checkPortAvailability").mockResolvedValue(true);
       jest.spyOn(instance as any, "spawnProcess").mockResolvedValue(undefined);
       jest.spyOn(instance as any, "startHealthCheck").mockImplementation();
       (instance as any).process = mockProcess;
@@ -323,6 +341,34 @@ describe("PortForwardManager", () => {
       await expect(manager.startPortForward(config)).rejects.toThrow(
         "Port forward already exists"
       );
+    });
+
+    it("should remove forward from manager if start() fails", async () => {
+      const config = {
+        cluster: "test-cluster",
+        namespace: "default",
+        service: "test-service",
+        servicePort: 80,
+        localPort: 8080,
+      };
+
+      jest
+        .spyOn(PortForwardInstance.prototype, "start")
+        .mockRejectedValue(new Error("Port 8080 is already in use and could not be released"));
+
+      await expect(manager.startPortForward(config)).rejects.toThrow(
+        "Port 8080 is already in use and could not be released"
+      );
+
+      expect(manager.getActiveForwards()).toHaveLength(0);
+
+      jest
+        .spyOn(PortForwardInstance.prototype, "start")
+        .mockResolvedValue(undefined);
+
+      const id = await manager.startPortForward(config);
+      expect(id).toBe("test-cluster-default-test-service-80-8080");
+      expect(manager.getActiveForwards()).toHaveLength(1);
     });
 
     it("should emit update events", async () => {

@@ -49,4 +49,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
   removeUpdateStatusListener: () => {
     ipcRenderer.removeAllListeners("update-status");
   },
+  getPortProcess: (port: number) => ipcRenderer.invoke("get-port-process", port),
+  killPortProcess: (port: number) => ipcRenderer.invoke("kill-port-process", port),
+  onPortOccupied: (callback: (data: any) => void) => {
+    ipcRenderer.on("port-occupied", (_event, data) => callback(data));
+  },
+  removePortOccupiedListener: () => {
+    ipcRenderer.removeAllListeners("port-occupied");
+  },
+  respondPortOccupied: (forwardId: string, shouldKill: boolean) =>
+    ipcRenderer.invoke("respond-port-occupied", forwardId, shouldKill),
 });

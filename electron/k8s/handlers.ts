@@ -3,6 +3,7 @@ import { K8sClient } from "./client";
 import { getClusters } from "./clusters";
 import { getNamespaces, getServices } from "./services";
 import { PortForwardManager } from "./portforward";
+import { getProcessUsingPort, killProcess } from "./port-utils";
 import {
   loadConfig,
   saveConfig,
@@ -257,5 +258,45 @@ export function setupK8sHandlers(
     windows.forEach((window: Electron.BrowserWindow) => {
       window.webContents.send("port-forward-update", status);
     });
+  });
+
+  portForwardManager.on("port-occupied", (data) => {
+    const windows = require("electron").BrowserWindow.getAllWindows();
+    windows.forEach((window: Electron.BrowserWindow) => {
+      window.webContents.send("port-occupied", data);
+    });
+  });
+
+  ipcMain.handle("get-port-process", async (_event, port: number) => {
+    try {
+      return await getProcessUsingPort(port);
+    } catch (error) {
+      logger.error("Error getting port process:", error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle("kill-port-process", async (_event, port: number) => {
+    try {
+      const processInfo = await getProcessUsingPort(port);
+      if (!processInfo) {
+        throw new Error(`No process found using port ${port}`);
+      }
+      await killProcess(processInfo.pid);
+      return true;
+    } catch (error) {
+      logger.error("Error killing port process:", error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle("respond-port-occupied", async (_event, forwardId: string, shouldKill: boolean) => {
+    try {
+      portForwardManager.respondToPortOccupied(forwardId, shouldKill);
+      return true;
+    } catch (error) {
+      logger.error("Error responding to port occupied:", error);
+      throw error;
+    }
   });
 }
