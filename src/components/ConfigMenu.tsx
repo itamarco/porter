@@ -103,16 +103,13 @@ export function ConfigMenu() {
       setIsOpen(false);
 
       if (updateInfo.updateAvailable) {
-        const downloadUrl = updateInfo.assetUrl || updateInfo.releaseUrl;
-        if (downloadUrl) {
-          const shouldDownload = confirm(
-            `Porter v${updateInfo.latestVersion} is available!\n\n` +
-              `You're currently on v${updateInfo.currentVersion}.\n\n` +
-              `Would you like to download the update?`
-          );
-          if (shouldDownload) {
-            await window.electronAPI.openInBrowser(downloadUrl);
-          }
+        const shouldDownload = confirm(
+          `Porter v${updateInfo.latestVersion} is available!\n\n` +
+            `You're currently on v${updateInfo.currentVersion}.\n\n` +
+            `Would you like to download the update?`
+        );
+        if (shouldDownload) {
+          await window.electronAPI.openInBrowser("https://itamarco.github.io/porter/");
         }
       } else {
         alert(

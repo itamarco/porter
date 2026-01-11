@@ -85,14 +85,11 @@ export function UpdateBanner() {
   }, []);
 
   const handleDownload = async () => {
-    if (!updateInfo || !window.electronAPI) {
+    if (!window.electronAPI) {
       return;
     }
 
-    const url = updateInfo.assetUrl || updateInfo.releaseUrl;
-    if (url) {
-      await window.electronAPI.openInBrowser(url);
-    }
+    await window.electronAPI.openInBrowser("https://itamarco.github.io/porter/");
   };
 
   const handleDismiss = () => {
@@ -127,14 +124,8 @@ export function UpdateBanner() {
         <p className="font-medium text-blue-300 mb-0.5 text-xs">
           Porter v{updateInfo.latestVersion} available
         </p>
-        <p className="text-[10px] text-blue-400/80 mb-0.5">
-          You're currently on v{updateInfo.currentVersion}
-        </p>
         <p className="text-[10px] text-blue-400/80 mb-2">
-          After installation on macOS, run{" "}
-          <code className="font-mono text-[9px]">
-            xattr -cr /Applications/Porter.app
-          </code>
+          You're currently on v{updateInfo.currentVersion}
         </p>
         <div className="flex gap-1.5">
           <button
