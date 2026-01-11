@@ -13,7 +13,7 @@
     "build:ci": "npm run prebuild && tsc && vite build && npm run build:electron && npm run prepare:gke-plugin && electron-builder --mac --x64 --publish never && electron-builder --mac --arm64 --publish never",
     "build:arm64": "npm run prebuild && tsc && vite build && npm run prepare:gke-plugin && electron-builder --mac --arm64",
     "build:x64": "npm run prebuild && tsc && vite build && npm run prepare:gke-plugin && electron-builder --mac --x64",
-    "build:win": "npm run prebuild:cross && tsc && vite build && npm run build:electron && npm run prepare:gke-plugin && electron-builder --win --x64",
+    "build:win": "npm run prebuild:cross && tsc && vite build && npm run build:electron && npm run prepare:gke-plugin && electron-builder --win --x64 --publish never",
     "build:electron": "tsc -p electron/tsconfig.json",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
