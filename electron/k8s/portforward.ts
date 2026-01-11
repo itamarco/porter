@@ -74,30 +74,40 @@ export class PortForwardInstance extends EventEmitter {
       return;
     }
 
-    const isPortAvailable = await this.checkPortAvailability();
-    if (!isPortAvailable) {
-      logger.warn(
-        `[PortForward] Port ${this.config.localPort} is still in use, waiting for release...`
-      );
-      await this.waitForPortRelease();
-    }
-
-    this.state = PortForwardState.CONNECTING;
-    this.emit("status-change", this.getStatus());
-
-    this.connectionTimeout = setTimeout(() => {
-      if (this.state === PortForwardState.CONNECTING) {
-        logger.error(
-          `[PortForward] Connection timeout for ${this.config.id}: port-forward did not establish within ${this.connectionTimeoutMs}ms`
+    try {
+      const isPortAvailable = await this.checkPortAvailability();
+      if (!isPortAvailable) {
+        logger.warn(
+          `[PortForward] Port ${this.config.localPort} is still in use, waiting for release...`
         );
-        this.handleError(
-          "Connection timeout: port-forward did not establish within 30s"
-        );
+        await this.waitForPortRelease();
       }
-    }, this.connectionTimeoutMs);
 
-    await this.spawnProcess();
-    this.startHealthCheck();
+      this.state = PortForwardState.CONNECTING;
+      this.emit("status-change", this.getStatus());
+
+      this.connectionTimeout = setTimeout(() => {
+        if (this.state === PortForwardState.CONNECTING) {
+          logger.error(
+            `[PortForward] Connection timeout for ${this.config.id}: port-forward did not establish within ${this.connectionTimeoutMs}ms`
+          );
+          this.handleError(
+            "Connection timeout: port-forward did not establish within 30s"
+          );
+        }
+      }, this.connectionTimeoutMs);
+
+      await this.spawnProcess();
+      this.startHealthCheck();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(
+        `[PortForward] Failed to start port forward for ${this.config.id}:`,
+        errorMessage
+      );
+      this.handleError(errorMessage);
+      throw error;
+    }
   }
 
   private async spawnProcess() {
@@ -509,7 +519,16 @@ export class PortForwardManager extends EventEmitter {
     });
 
     this.forwards.set(id, instance);
-    await instance.start();
+    
+    try {
+      await instance.start();
+    } catch (error) {
+      logger.error(
+        `[PortForwardManager] Failed to start port forward ${id}, removing from manager`
+      );
+      this.forwards.delete(id);
+      throw error;
+    }
 
     return id;
   }
