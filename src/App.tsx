@@ -69,7 +69,7 @@ function App() {
     <div className="h-screen w-screen overflow-y-auto bg-skeuo-bg text-gray-200 font-sans">
       <div className="electron-drag fixed top-0 left-0 right-0 h-20 z-50" />
       <div className="p-4 max-w-6xl mx-auto pt-4">
-        <div className="mb-4 skeuo-card p-4 flex items-center justify-between">
+        <div className="mb-4 skeuo-card p-4 flex items-center justify-between relative z-[60]">
           <div className="electron-drag flex-1">
             <h1 className="text-2xl font-bold text-gray-100 mb-0.5 tracking-tight">
               Porter
@@ -78,7 +78,7 @@ function App() {
               K8s Port Forward Manager
             </p>
           </div>
-          <div className="electron-no-drag">
+          <div className="electron-no-drag relative">
             <ConfigMenu />
           </div>
         </div>

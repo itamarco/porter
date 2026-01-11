@@ -16,8 +16,13 @@ export function ConfigMenu() {
     };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      // Use setTimeout to avoid immediate closure when opening the menu
+      const timeoutId = setTimeout(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+      }, 0);
+      
       return () => {
+        clearTimeout(timeoutId);
         document.removeEventListener("mousedown", handleClickOutside);
       };
     }
@@ -123,11 +128,18 @@ export function ConfigMenu() {
   };
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="relative z-[60]" ref={menuRef} style={{ pointerEvents: 'auto' }}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={(e) => {
+          console.log('Menu button clicked');
+          e.stopPropagation();
+          setIsOpen((prev) => !prev);
+        }}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+        }}
         className={`
-          p-2 rounded-xl text-gray-300 transition-all duration-200
+          p-2 rounded-xl text-gray-300 transition-all duration-200 relative z-[60]
           ${
             isOpen
               ? "shadow-skeuo-active text-skeuo-accent"
@@ -135,6 +147,8 @@ export function ConfigMenu() {
           }
         `}
         aria-label="Config menu"
+        type="button"
+        style={{ pointerEvents: 'auto', cursor: 'pointer' }}
       >
         <svg
           className="w-5 h-5"
@@ -152,7 +166,7 @@ export function ConfigMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-48 skeuo-card p-1.5 z-50 overflow-hidden animate-fade-in">
+        <div className="absolute right-0 mt-3 w-48 skeuo-card p-1.5 z-[60] overflow-hidden animate-fade-in">
           <div className="flex flex-col gap-1">
             <button
               onClick={handleCheckUpdates}
