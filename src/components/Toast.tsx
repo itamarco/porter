@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fontSizes } from "../theme";
 
 interface Toast {
   id: string;
@@ -111,7 +112,7 @@ export function ToastContainer() {
             )}
           </div>
           <p
-            className={`font-medium flex-1 ${
+            className={`${fontSizes.toast} font-medium flex-1 ${
               toast.type === "error"
                 ? "text-red-300"
                 : toast.type === "success"

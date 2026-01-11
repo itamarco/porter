@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { ProcessInfo } from '../types/electron';
+import { fontSizes } from '../theme';
 
 interface PortOccupiedDialogProps {
   processInfo: ProcessInfo;
@@ -46,19 +47,19 @@ export function PortOccupiedDialog({ processInfo, onKill, onCancel }: PortOccupi
             </svg>
           </div>
           <div className="ml-3 flex-1">
-            <h3 className="text-lg font-bold text-gray-100 tracking-tight">
+            <h3 className={`${fontSizes.dialogTitle} font-bold text-gray-100 tracking-tight`}>
               Port {processInfo.port} is Already in Use
             </h3>
           </div>
         </div>
 
         <div className="mb-6 space-y-3">
-          <p className="text-sm text-gray-300 leading-relaxed">
+          <p className={`${fontSizes.dialogBody} text-gray-300 leading-relaxed`}>
             The port you're trying to use is occupied by another process. You can kill the process
             to free up the port, but this may interrupt other applications.
           </p>
 
-          <div className="skeuo-input p-3 space-y-2 text-sm">
+          <div className={`skeuo-input p-3 space-y-2 ${fontSizes.dialogLabel}`}>
             <div className="flex">
               <span className="font-medium text-gray-400 w-28">Port:</span>
               <span className="text-gray-200">{processInfo.port}</span>
@@ -69,20 +70,20 @@ export function PortOccupiedDialog({ processInfo, onKill, onCancel }: PortOccupi
             </div>
             <div className="flex">
               <span className="font-medium text-gray-400 w-28">Process:</span>
-              <span className="text-gray-200 font-mono text-xs break-all">
+              <span className={`text-gray-200 font-mono ${fontSizes.dialogMono} break-all`}>
                 {processInfo.processName}
               </span>
             </div>
             <div className="flex flex-col">
               <span className="font-medium text-gray-400 mb-1">Command:</span>
-              <span className="text-gray-300 font-mono text-xs break-all bg-[#252830] p-2 rounded">
+              <span className={`text-gray-300 font-mono ${fontSizes.dialogMono} break-all bg-[#252830] p-2 rounded`}>
                 {processInfo.commandLine}
               </span>
             </div>
           </div>
 
           <div className="border border-yellow-600/30 rounded-xl p-3 bg-yellow-500/5">
-            <p className="text-xs text-yellow-300">
+            <p className={`${fontSizes.dialogWarning} text-yellow-300`}>
               <strong className="font-semibold">Warning:</strong> Killing this process may cause data loss or unexpected
               behavior in the application using it.
             </p>
@@ -92,13 +93,13 @@ export function PortOccupiedDialog({ processInfo, onKill, onCancel }: PortOccupi
         <div className="flex justify-end space-x-3">
           <button
             onClick={onCancel}
-            className="skeuo-btn px-5 py-2 text-sm font-medium"
+            className={`skeuo-btn px-5 py-2 ${fontSizes.button} font-medium`}
           >
             Cancel
           </button>
           <button
             onClick={onKill}
-            className="px-5 py-2 text-sm font-medium text-white bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+            className={`px-5 py-2 ${fontSizes.button} font-medium text-white bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200`}
           >
             Kill Process & Retry
           </button>
