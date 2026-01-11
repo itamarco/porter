@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  build-macos:
     runs-on: macos-latest
 
     steps:
@@ -50,11 +50,85 @@ jobs:
           # Clean up any temporary DMG files
           rm -f /tmp/*.dmg 2>/dev/null || true
 
-      - name: Build application
+      - name: Build macOS application
         run: npm run build:ci
         env:
           CI: true
         continue-on-error: false
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release
+          path: release/Porter-*.dmg
+          retention-days: 7
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get version from tag
+        id: version
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Update package.json version
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          $currentVersion = node -p "require('./package.json').version"
+          if ($version -ne $currentVersion) {
+            npm version $version --no-git-tag-version
+          } else {
+            Write-Host "Version is already $version, skipping update"
+          }
+
+      - name: Build Windows application
+        run: npm run build:win
+        env:
+          CI: true
+        continue-on-error: false
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: release/Porter-*.exe
+          retention-days: 7
+
+  release:
+    needs: [build-macos, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-release
+          path: release/
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-release
+          path: release/
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -64,4 +138,6 @@ jobs:
           name: Release ${{ github.ref_name }}
           draft: false
           prerelease: ${{ contains(github.ref_name, 'hotfix') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
-          files: release/Porter-*.dmg
+          files: |
+            release/Porter-*.dmg
+            release/Porter-*.exe
